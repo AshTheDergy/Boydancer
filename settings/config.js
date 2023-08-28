@@ -1,16 +1,10 @@
 require('dotenv').config();
 module.exports = {
-    
-    ffmpegPath: `C:\\PATH_Programs\\ffmpeg.exe`,
-    TOKEN: process.env.TOKEN,
+    TOKEN: process.env.TOKEN, //replace with your token
     embed: {
         color: "#220f80",
         wrongcolor: "#8a0808",
-        footertext: "Made by AshTheDergy | Fluffy Derg Productions"
-    },
-    slash: {
-        global: true,
-        guildID: "924707637659062373",
+        footertext: "Made by AshTheDergy | Fluffy Derg Productions", //you can change this
     },
     options: {
         embedFooter: true,

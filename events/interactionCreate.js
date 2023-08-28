@@ -9,36 +9,72 @@ const {
 
 client.on("interactionCreate", async (interaction) => {
   if (interaction.isCommand()) {
-    await interaction.deferReply({ ephemeral: false }).catch((e) => {});
-    const cmd = client.commands.get(interaction.commandName);
-    if (!cmd)
-      return client.embed(
-        interaction,
-        `${emoji.ERROR} \`${interaction.commandName}\` Command Not Found `
-      );
-    const args = [];
-    for (let option of interaction.options.data) {
-      if (option.type === ApplicationCommandOptionType.Subcommand) {
-        if (option.name) args.push(option.name);
-        option.options?.forEach((x) => {
-          if (x.value) args.push(x.value);
-        });
-      } else if (option.value) args.push(option.value);
-    }
-    interaction.member = interaction.guild.members.cache.get(
-      interaction.user.id
-    );
-    if (cmd) {
-      if (cooldown(interaction, cmd)) {
+    const cmdName = interaction.commandName;
+  
+    if (cmdName === 'help'/* || cmdName === 'boydancer'*/) {
+      const cmd = client.commands.get(cmdName);
+      if (!cmd) {
         return client.embed(
           interaction,
-          ` You are On Cooldown , wait \`${cooldown(
-            interaction,
-            cmd
-          ).toFixed()}\` Seconds`
+          `${emoji.error} \`${cmdName}\` Command Not Found`
         );
       } else {
-        cmd.run(client, interaction, args);
+        const args = [];
+        for (let option of interaction.options.data) {
+          if (option.type === ApplicationCommandOptionType.Subcommand) {
+            if (option.name) args.push(option.name);
+            option.options?.forEach((x) => {
+              if (x.value) args.push(x.value);
+            });
+          } else if (option.value) {
+            args.push(option.value);
+          }
+        }
+  
+        if (cooldown(interaction, cmd)) {
+          return client.embed(
+            interaction,
+            `You are On Cooldown, wait \`${cooldown(
+              interaction,
+              cmd
+            ).toFixed()}\` Seconds`
+          );
+        } else {
+          cmd.run(client, interaction, args);
+        }
+      }
+    } else {
+      await interaction.deferReply({ ephemeral: false }).catch((e) => {});
+      const cmd = client.commands.get(cmdName);
+      if (!cmd) {
+        return client.embed(
+          interaction,
+          `${emoji.error} \`${cmdName}\` Command Not Found`
+        );
+      } else {
+        const args = [];
+        for (let option of interaction.options.data) {
+          if (option.type === ApplicationCommandOptionType.Subcommand) {
+            if (option.name) args.push(option.name);
+            option.options?.forEach((x) => {
+              if (x.value) args.push(x.value);
+            });
+          } else if (option.value) {
+            args.push(option.value);
+          }
+        }
+  
+        if (cooldown(interaction, cmd)) {
+          return client.embed(
+            interaction,
+            `You are On Cooldown, wait \`${cooldown(
+              interaction,
+              cmd
+            ).toFixed()}\` Seconds`
+          );
+        } else {
+          cmd.run(client, interaction, args);
+        }
       }
     }
   }

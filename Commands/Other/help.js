@@ -31,7 +31,7 @@ module.exports = {
 
         let helpEmbed = new EmbedBuilder()
         .setDescription(
-            `** How to use \`/boydancer\` options\n\`File\` - Select this if you want to use a local file (video or audio)\n\`Link\` - Select this if you want to use a youtube or file link (video or audio)\n||~~Selecting both won't work and will make the bot confused~~||\n\`Start\` - Select this to add a start time from the source audio/video (e.g. 0:24, 2:52)\n\`End\` - Select this to add a end time from the source audio/video (e.g. 0:24, 2:52)\n\nSupported Files:\n**\`${correctFile.join('\`, \`')}\``
+            `** How to use \`/boydancer\` options\n\`File\` - Select this if you want to use a local file (video or audio)\n\`Link\` - Select this if you want to use a youtube or file link (video or audio)\n||~~Selecting both won't work and will make the bot confused~~||\n\`Start\` - Select this to add a start time from the source audio/video (e.g. 0:24, 2:52)\n\`End\` - Select this to add a end time from the source audio/video (e.g. 0:24, 2:52)\n__!!!MAX UPLOAD VIDEO LENGTH IS 10 MINUTES AND MAX BOYDANCER VIDEO LENGTH IS 1 MINUTE!!!__\n\nSupported Files:\n**\`${correctFile.join('\`, \`')}\``
         )
         .addFields([
             {

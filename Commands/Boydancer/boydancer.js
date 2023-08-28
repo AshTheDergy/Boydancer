@@ -9,7 +9,7 @@ const humanizeDuration = require('humanize-duration');
 
 module.exports = {
     name: "boydancer",
-    description: `Apply audio (currently only audio files) to boykisser dancing video max 60 seconds!! (in beta)`,
+    description: `Apply audio to boykisser dancing video max 60 seconds!! (in beta)`,
     userPermissions: ['SEND_MESSAGES'],
     botPermissions: ["EMBED_LINKS"],
     type: "CHAT_INPUT",

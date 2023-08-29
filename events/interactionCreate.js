@@ -11,7 +11,7 @@ client.on("interactionCreate", async (interaction) => {
   if (interaction.isCommand()) {
     const cmdName = interaction.commandName;
   
-    if (cmdName === 'help'/* || cmdName === 'boydancer'*/) {
+    if (cmdName === 'help' || cmdName === 'boydancer') {
       const cmd = client.commands.get(cmdName);
       if (!cmd) {
         return client.embed(

@@ -41,6 +41,16 @@ module.exports = {
     * @param {CommandInteraction} interaction
     */
     run: async (client, interaction) => {
+        
+        let used = await client.usage.get(`${interaction.user.id}`);
+        if (!used) {
+            await client.usage.set(`${interaction.user.id}.username`, interaction.user.username);
+        } else if (used.username !== interaction.user.username) {
+            client.usage.update(`${interaction.user.id}.username`, interaction.user.username);
+        }
+        const usedSuccessful = used?.successful;
+        const usedAll = used?.all;
+        await usedAll ? client.usage.inc(`${interaction.user.id}.all`) : client.usage.set(`${interaction.user.id}.all`, 1);
 
         const author = interaction.user.id;
         const cooldown = cooldowns.get(author);
@@ -152,7 +162,10 @@ module.exports = {
                                     interaction.reply({content: `${emojiError} - ** Please make sure your __START__ time is smaller than the video **`, ephemeral: true});
                                     cooldownUser(author, 10);
                                     return;
-                                } else if (start + 60 > length) {
+                                } else if (start === 0) {
+                            		danceStart = start;
+                            		danceEnd = start + 60;
+                        		} else if (start + 60 > length) {
                                     danceStart = start;
                                     danceEnd = length;
                                 } else if (start) {
@@ -173,6 +186,7 @@ module.exports = {
                                 fs.unlinkSync(outputVideoPath);
                                 fs.unlinkSync(tempYoutubePath);
                                 cooldownUser(author, 60);
+                                await client.usage.set(`${interaction.user.id}.successful`, usedSuccessful ? parseInt(usedSuccessful) + 1 : 1);
                             } catch (error) {
                                 console.error('Error generating the video:', error);
                                 interaction.followUp('An error occurred while generating the video.');
@@ -241,6 +255,9 @@ module.exports = {
                             interaction.reply({content: `${emojiError} - ** Please make sure your __START__ time is smaller than the video **`, ephemeral: true});
                             cooldownUser(author, 10);
                             return;
+                        } else if (start === 0) {
+                            danceStart = start;
+                            danceEnd = start + 60;
                         } else if (start + 60 > length) {
                             danceStart = start;
                             danceEnd = length;
@@ -260,6 +277,7 @@ module.exports = {
                         await interaction.followUp({content: `${emojiSuccess} - Here is your boydancer ${interaction.user}:`, files: [{ attachment: outputVideoPath, name: "Boydancer.mp4"}]});
                         fs.unlinkSync(outputVideoPath);
                         cooldownUser(author, 60);
+                        await client.usage.set(`${interaction.user.id}.successful`, usedSuccessful ? parseInt(usedSuccessful) + 1 : 1);
                     } catch (error) {
                         console.error('Error generating the video:', error);
                         interaction.followUp('An error occurred while generating the video.');
@@ -336,6 +354,9 @@ module.exports = {
                             interaction.reply({content: `${emojiError} - ** Please make sure your __START__ time is smaller than the video **`, ephemeral: true});
                             cooldownUser(author, 10);
                             return;
+                        } else if (start === 0) {
+                            danceStart = start;
+                            danceEnd = start + 60;
                         } else if (start + 60 > length) {
                             danceStart = start;
                             danceEnd = length;
@@ -349,12 +370,13 @@ module.exports = {
                         }
                     }
                     interaction.reply({content: `Generating video... <a:boypet2:1146012115451265035> `, ephemeral: true});
-                    cooldown(author, 1);
+                    cooldownUser(author, 1);
                     try {
                         await applyAudioToVideoFILE(af, danceStart, length < 60 ? length : danceEnd);
                         await interaction.followUp({content: `${emojiSuccess} - Here is your boydancer:`, files: [{ attachment: outputVideoPath, name: "Boydancer.mp4"}]});
                         fs.unlinkSync(outputVideoPath);
                         cooldownUser(author, 60);
+                        await client.usage.set(`${interaction.user.id}.successful`, usedSuccessful ? parseInt(usedSuccessful) + 1 : 1);
                     } catch (error) {
                         console.error('Error generating the video:', error);
                         interaction.followUp('An error occurred while generating the video.');

@@ -360,7 +360,7 @@ module.exports = {
                     interaction.reply({content: `Generating video... <a:boypet2:1146012115451265035> `, ephemeral: true});
                     cooldownUser(author, 1);
                     try {
-                        await applyAudioToVideoFILE(af, danceStart, length < 60 ? length : danceEnd);
+                        await applyAudioToVideoFILE(file, danceStart, length < 60 ? length : danceEnd);
                         await interaction.followUp({content: `${emojiSuccess} - Here is your boydancer:`, files: [{ attachment: outputVideoPath, name: "Boydancer.mp4"}]});
                         fs.unlinkSync(outputVideoPath);
                         cooldownUser(author, 60);

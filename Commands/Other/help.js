@@ -36,7 +36,10 @@ module.exports = {
         .addFields([
             {
                 name: `Other info`,
-                value: `>>> ** <:inthezone:1145609078891106334> \`${allguilds}\` Guilds \n <a:spinmerightround:1145609663824527360> ${botuptime} Uptime \n <:6969iq:1145609956490481724> \`${client.ws.ping}\` Ping **\nUse \`/report bug\` to report bugs and other stuff! ${bugs > 0 ? `currently \`${bugs}\` bugs` : " "}`
+                value: `>>> ** <:inthezone:1145609078891106334> \`${allguilds}\` Guilds \n <a:spinmerightround:1145609663824527360> ${botuptime} Uptime \n <:6969iq:1145609956490481724> \`${client.ws.ping}\` Ping \n <:boythinker:1146052187118637157> \`${client.config.news.version}\` Version \n Premium (coming soon)**\nUse \`/report bug\` to report bugs and other stuff! ${bugs > 0 ? `currently \`${bugs}\` bugs` : " "}` },
+            {
+              	name: `What's new?`,
+                value: `${client.config.news.new.join('\n')}`
             },
         ])
         .setColor('#' + Math.floor(Math.random() * 0xFFFFFF).toString(16).padEnd(6, '0'))

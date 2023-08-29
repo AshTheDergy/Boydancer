@@ -101,15 +101,6 @@ module.exports = {
             cooldownUser(author, 10);
             return;
         } else if (a.startsWith(correctYoutube) || a.startsWith(correctShareYoutube)) {
-            /*const videoId = await extractVideoId(audioUrl);
-            if (!videoId) {
-                client.embed(
-                    interaction,
-                    `${emojiError} - ** The video you are trying to access __DOES NOT EXIST__ or is __PRIVATED__**`
-                );
-                cooldownUser(author, 10);
-                return;
-            }*/
             const videoLive = await checkLiveStatus(audioUrl);
             if (videoLive) {
                 client.embed(
@@ -215,7 +206,6 @@ module.exports = {
                                 fs.unlinkSync(outputVideoPath);
                                 fs.unlinkSync(tempYoutubePath);
                                 cooldownUser(author, 60);
-                                await client.usage.set(`${interaction.user.id}.successful`, usedSuccessful ? parseInt(usedSuccessful) + 1 : 1);
                             } catch (error) {
                                 console.error('Error generating the video:', error);
                                 interaction.followUp('An error occurred while generating the video.');
@@ -312,7 +302,6 @@ module.exports = {
                     await interaction.followUp({content: `${emojiSuccess} - Here is your boydancer:`, files: [{ attachment: outputVideoPath, name: "Boydancer.mp4"}]});
                     fs.unlinkSync(outputVideoPath);
                     cooldownUser(author, 60);
-                    await client.usage.set(`${interaction.user.id}.successful`, usedSuccessful ? parseInt(usedSuccessful) + 1 : 1);
                 } catch (error) {
                     console.error('Error generating the video:', error);
                     interaction.followUp('An error occurred while generating the video.');
@@ -422,7 +411,6 @@ module.exports = {
                     await interaction.followUp({content: `${emojiSuccess} - Here is your boydancer:`, files: [{ attachment: outputVideoPath, name: "Boydancer.mp4"}]});
                     fs.unlinkSync(outputVideoPath);
                     cooldownUser(author, 60);
-                    await client.usage.set(`${interaction.user.id}.successful`, usedSuccessful ? parseInt(usedSuccessful) + 1 : 1);
                 } catch (error) {
                     console.error('Error generating the video:', error);
                     interaction.followUp('An error occurred while generating the video.');
@@ -506,11 +494,14 @@ module.exports = {
 
     async function applyAudioToVideoFILE(file, start, end) {
     const duration = end - start;
+        console.log(start);
+        console.log(duration);
     return new Promise((resolve, reject) => {
         const ffmpegProcess = ffmpeg()
             .input(`./files/permanentFiles/theboydancer.mp4`)
-            .inputOptions(['-ss 0', '-ss ' + start.toString()])
+            .inputOptions(['-ss 0'])
             .input(file)
+            .inputOptions(['-ss ' + start.toString()])
             .complexFilter([
                 '[0:a]volume=0.2[audio];[1:a]volume=1[music];[audio][music]amix=inputs=2:duration=first:dropout_transition=2[audioout]'
             ])
@@ -525,7 +516,7 @@ module.exports = {
 
         ffmpegProcess.run();
     });
-}
+    }
 
     async function getVideoDuration(videoUrl) {
     return new Promise((resolve, reject) => {

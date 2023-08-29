@@ -49,7 +49,7 @@ module.exports = {
 
         interaction.reply({
             embeds: [helpEmbed],
-            ephemeral: true, //you can turn this off if you wish others to see the help command
+            ephemeral: true, //you can turn this to false if you wish others to see the help command
         });
     },
 }

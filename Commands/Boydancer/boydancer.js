@@ -167,12 +167,12 @@ module.exports = {
                                     return;
                                 }
                             }
-                            interaction.reply({content: `Generating video... <a:boypet2:1146012115451265035> `, ephemeral: true});
+                            interaction.reply({content: `Generating video... <a:boypet2:1146012115451265035>`});
                             await downloadYoutubeVideo(audioUrl);
                             cooldownUser(author, 2);
                             try {
                                 await applyAudioWithDelay(tempYoutubePath, danceStart, length < 60 ? length : danceEnd, 5000);
-                                await interaction.followUp({content: `${emojiSuccess} - Here is your boydancer ${interaction.user}:`, files: [{ attachment: outputVideoPath, name: "Boydancer.mp4"}]});
+                                await interaction.editReply({content: `${emojiSuccess} - Here is your boydancer ${interaction.user}:`, files: [{ attachment: outputVideoPath, name: "Boydancer.mp4"}]});
                                 fs.unlinkSync(outputVideoPath);
                                 fs.unlinkSync(tempYoutubePath);
                                 cooldownUser(author, 60);
@@ -259,11 +259,11 @@ module.exports = {
                             return;
                         }
                     }
-                    interaction.reply({content: `Generating video... <a:boypet2:1146012115451265035> `, ephemeral: true});
+                    interaction.reply({content: `Generating video... <a:boypet2:1146012115451265035>`});
                     cooldownUser(author, 1);
                     try {
                         await applyAudioToVideoFILE(audioUrl, danceStart, length < 60 ? length : danceEnd);
-                        await interaction.followUp({content: `${emojiSuccess} - Here is your boydancer ${interaction.user}:`, files: [{ attachment: outputVideoPath, name: "Boydancer.mp4"}]});
+                        await interaction.editReply({content: `${emojiSuccess} - Here is your boydancer ${interaction.user}:`, files: [{ attachment: outputVideoPath, name: "Boydancer.mp4"}]});
                         fs.unlinkSync(outputVideoPath);
                         cooldownUser(author, 60);
                     } catch (error) {
@@ -357,11 +357,11 @@ module.exports = {
                             return;
                         }
                     }
-                    interaction.reply({content: `Generating video... <a:boypet2:1146012115451265035> `, ephemeral: true});
+                    interaction.reply({content: `Generating video... <a:boypet2:1146012115451265035>`});
                     cooldownUser(author, 1);
                     try {
                         await applyAudioToVideoFILE(file, danceStart, length < 60 ? length : danceEnd);
-                        await interaction.followUp({content: `${emojiSuccess} - Here is your boydancer:`, files: [{ attachment: outputVideoPath, name: "Boydancer.mp4"}]});
+                        await interaction.editReply({content: `${emojiSuccess} - Here is your boydancer:`, files: [{ attachment: outputVideoPath, name: "Boydancer.mp4"}]});
                         fs.unlinkSync(outputVideoPath);
                         cooldownUser(author, 60);
                     } catch (error) {

@@ -41,16 +41,6 @@ module.exports = {
     * @param {CommandInteraction} interaction
     */
     run: async (client, interaction) => {
-        
-        let used = await client.usage.get(`${interaction.user.id}`);
-        if (!used) {
-            await client.usage.set(`${interaction.user.id}.username`, interaction.user.username);
-        } else if (used.username !== interaction.user.username) {
-            client.usage.update(`${interaction.user.id}.username`, interaction.user.username);
-        }
-        const usedSuccessful = used?.successful;
-        const usedAll = used?.all;
-        await usedAll ? client.usage.inc(`${interaction.user.id}.all`) : client.usage.set(`${interaction.user.id}.all`, 1);
 
         const author = interaction.user.id;
         const cooldown = cooldowns.get(author);
@@ -186,7 +176,6 @@ module.exports = {
                                 fs.unlinkSync(outputVideoPath);
                                 fs.unlinkSync(tempYoutubePath);
                                 cooldownUser(author, 60);
-                                await client.usage.set(`${interaction.user.id}.successful`, usedSuccessful ? parseInt(usedSuccessful) + 1 : 1);
                             } catch (error) {
                                 console.error('Error generating the video:', error);
                                 interaction.followUp('An error occurred while generating the video.');
@@ -277,7 +266,6 @@ module.exports = {
                         await interaction.followUp({content: `${emojiSuccess} - Here is your boydancer ${interaction.user}:`, files: [{ attachment: outputVideoPath, name: "Boydancer.mp4"}]});
                         fs.unlinkSync(outputVideoPath);
                         cooldownUser(author, 60);
-                        await client.usage.set(`${interaction.user.id}.successful`, usedSuccessful ? parseInt(usedSuccessful) + 1 : 1);
                     } catch (error) {
                         console.error('Error generating the video:', error);
                         interaction.followUp('An error occurred while generating the video.');
@@ -376,7 +364,6 @@ module.exports = {
                         await interaction.followUp({content: `${emojiSuccess} - Here is your boydancer:`, files: [{ attachment: outputVideoPath, name: "Boydancer.mp4"}]});
                         fs.unlinkSync(outputVideoPath);
                         cooldownUser(author, 60);
-                        await client.usage.set(`${interaction.user.id}.successful`, usedSuccessful ? parseInt(usedSuccessful) + 1 : 1);
                     } catch (error) {
                         console.error('Error generating the video:', error);
                         interaction.followUp('An error occurred while generating the video.');

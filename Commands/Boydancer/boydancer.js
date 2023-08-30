@@ -6,6 +6,7 @@ const { CommandInteraction } = require("discord.js");
 const PH = require("../../handlers/Client");
 const cooldowns = new Map();
 const humanizeDuration = require('humanize-duration');
+const scdl = require('soundcloud-downloader').default;
 
 module.exports = {
     name: "boydancer",
@@ -21,7 +22,7 @@ module.exports = {
         },
         {
             name: "link",
-            description: "A video/song link (currently youtube and file links only)",
+            description: "A video/song link (currently youtube, soundcloud and file links only)",
             type: 3,
         },
         {
@@ -65,7 +66,7 @@ module.exports = {
         const outputVideoPath = `./files/temporaryFinalVideo/${randomFileName}.mp4`;
         const tempYoutubePath = `./files/temporaryYoutube/${randomFileName}.wav`;
 
-
+        
         if (cooldown && interaction.user.id !== "817843037593403402") {
             const remaining = humanizeDuration(cooldown - Date.now(), { units: ['m', 's'], round: true });
             interaction.reply({content: `You are On Cooldown, wait \`${remaining}\``, ephemeral: true});
@@ -83,7 +84,7 @@ module.exports = {
         } else if (audioUrl && !audioFile) {
             const link = audioUrl.toLowerCase();
             if (!link.startsWith("https://")) {
-                interaction.reply({content: `${emojiError} - ** Please provide a correct link (supported are __Youtube__ and __Audio/Video__ links (use \`/help boydancer\` for more information) **`, ephemeral: true});
+                interaction.reply({content: `${emojiError} - ** Please provide a correct link (supported are __Youtube__, __SoundCloud__ and __Audio/Video__ links (use \`/help boydancer\` for more information) **`, ephemeral: true});
                 cooldownUser(author, 10);
                 return;
             } else if (isYoutubeLink(audioUrl)) {
@@ -189,6 +190,102 @@ module.exports = {
                     cooldownUser(author, 10);
                     return;
                 }
+            } else if (isSoundCloudLink(audioUrl)) {
+                if (isWorkingLink_SoundCloud(audioUrl)) {
+                    const length = await checkSoundCloudLength(audioUrl);
+                        if (length > 600) {
+                            interaction.reply({content: `${emojiError} - ** Please ensure that the __SoundCloud Song__ is __10 minutes (600 seconds)__ or shorter **`, ephemeral: true});
+                            cooldownUser(author, 10);
+                            return;
+                        } else { //fun part
+                            if (startTime && endTime) {
+                                const start = giveSecondsFromTime(startTime);
+                                const end = giveSecondsFromTime(endTime);
+                                if (start > length || end > length) {
+                                    interaction.reply({content: `${emojiError} - ** Please ensure your __START__ and/or __END__ times are shorter than the song's duration **`, ephemeral: true});
+                                    cooldownUser(author, 10);
+                                    return;
+                                } else if (start >= end) {
+                                    interaction.reply({content: `${emojiError} - ** Please ensure your __START__ time is shorter than __END__ time **`, ephemeral: true});
+                                    cooldownUser(author, 10);
+                                    return;
+                                } else if (start + 60 < end) {
+                                    interaction.reply({content: `${emojiError} - ** The time between __START__ and __END__ is over \`60\` seconds **`, ephemeral: true});
+                                    cooldownUser(author, 10);
+                                    return;
+                                } else if (start === end) {
+                                    interaction.reply({content: `${emojiError} - ** The time between __START__ and __END__ has to be at least \`1\` second **`, ephemeral: true});
+                                    cooldownUser(author, 10);
+                                    return;
+                                } else if (start === 0 && end) {
+                                    danceStart = 0;
+                                    danceEnd = end;
+                                } else if (start && end) {
+                                    danceStart = start;
+                                    danceEnd = end;
+                                }
+                            } else if (!startTime && endTime) {
+                                const end = giveSecondsFromTime(endTime);
+                                if (end > length) {
+                                    interaction.reply({content: `${emojiError} - ** Please ensure your __END__ time is shorter than the video **`, ephemeral: true});
+                                    cooldownUser(author, 10);
+                                    return;
+                                } else if (end === 0) {
+                                    interaction.reply({content: `The __END__ time can not be \`0\` seconds`, ephemeral: true});
+                                    cooldownUser(author, 10);
+                                    return;
+                                } else if (end <= 60) {
+                                    danceEnd = end;
+                                } else if (end > 60) {
+                                    danceStart = end - 60;
+                                    danceEnd = end;
+                                } else {
+                                    interaction.reply({content: `${emojiError} - ** Please insert a correct __END__ time **`, ephemeral: true});
+                                    cooldownUser(author, 10);
+                                    return;
+                                }
+                            } else if (startTime && !endTime) {
+                                const start = giveSecondsFromTime(startTime);
+                                if (start > length) {
+                                    interaction.reply({content: `${emojiError} - ** Please make sure your __START__ time is smaller than the video **`, ephemeral: true});
+                                    cooldownUser(author, 10);
+                                    return;
+                                } else if (start === 0) {
+                            		danceStart = start;
+                            		danceEnd = start + 60;
+                        		} else if (start + 60 > length) {
+                                    danceStart = start;
+                                    danceEnd = length;
+                                } else if (start) {
+                                    danceStart = start;
+                                    danceEnd = start + 60;
+                                } else {
+                                    interaction.reply({content: `${emojiError} - ** Please insert a correct __START__ time **`, ephemeral: true});
+                                    cooldownUser(author, 10);
+                                    return;
+                                }
+                            }
+                            interaction.reply({content: `Generating video... <a:boypet2:1146012115451265035>`});
+                            await downloadSoundCloud(audioUrl);
+                            cooldownUser(author, 2);
+                            try {
+                                await applyAudioWithDelay(tempYoutubePath, danceStart, length < 60 ? length : danceEnd, 5000);
+                                await interaction.editReply({content: `${emojiSuccess} - Here is your boydancer ${interaction.user}:`, files: [{ attachment: outputVideoPath, name: "Boydancer.mp4"}]});
+                                fs.unlinkSync(outputVideoPath);
+                                fs.unlinkSync(tempYoutubePath);
+                                cooldownUser(author, 60);
+                            } catch (error) {
+                                console.error('Error generating the video:', error);
+                                interaction.followUp('An error occurred while generating the video.');
+                                cooldownUser(author, 10);
+                                fs.unlinkSync(tempYoutubePath);
+                            }
+                        }
+                } else {
+                    interaction.reply({content: `${emojiError} - ** The __SoundCloud Link__ you provided Does Not Exist **`, ephemeral: true});
+                    cooldownUser(author, 10);
+                    return;
+                }
             } else if (correctFile.some(extension => link.endsWith(extension))) {
                 const length = await getVideoDuration(audioUrl);
                 if (length) {
@@ -277,7 +374,7 @@ module.exports = {
                     cooldownUser(author, 10);
                 }
             } else {
-                interaction.reply({content: `${emojiError} - ** Please provide a supported link (supported are __Youtube__ and __Audio/Video__ links (use \`/help boydancer\` for more information) **`, ephemeral: true});
+                interaction.reply({content: `${emojiError} - ** Please provide a supported link (supported are __Youtube__, __SoundCloud__ and __Audio/Video__ links (use \`/help boydancer\` for more information) **`, ephemeral: true});
                 cooldownUser(author, 10);
                 return;
             }
@@ -480,6 +577,42 @@ module.exports = {
             stream.on('error', (err) => {
             console.error('Error:', err);
             });
+        }
+
+        // SoundCloud Functions
+
+        function isSoundCloudLink(Url) {
+            const patterns = [
+                /^https?:\/\/(soundcloud\.com)\/(.*)$/,
+              ];
+          
+            for (const pattern of patterns) {
+                if (pattern.test(Url)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function isWorkingLink_SoundCloud(Url) {
+            return scdl.isValidUrl(Url);
+        }
+
+        async function checkSoundCloudLength(Url) {
+            try {
+                const json = await scdl.getInfo(Url);
+                const length = Math.floor(json.full_duration / 1000);
+                return length;
+            } catch (error) {
+                console.error(error);
+                return;
+            }
+        }
+
+        async function downloadSoundCloud(audioUrl) {
+            const outputPath = tempYoutubePath;
+            const fileStream = fs.createWriteStream(outputPath);
+            scdl.downloadFormat(audioUrl, "audio/mpeg").then(stream => stream.pipe(fileStream)).catch(err => console.error('Error:', err));
         }
 
         //links function

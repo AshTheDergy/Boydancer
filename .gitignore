@@ -1,2 +1,8 @@
+# Ignore Node Modules
 node_modules/*
+
+# Ignore .env
 .env
+
+# Ignore uploading Bugs to GitHub
+data/bugs/*

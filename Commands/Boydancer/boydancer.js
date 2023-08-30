@@ -61,8 +61,6 @@ module.exports = {
         var danceEnd = 60;
 
         const randomFileName = interaction.user.id;
-        const ffmpegPath = `./Commands/Boydancer/ffmpeg.exe`;
-        const boyDancerFile = `./files/permanentFiles/theboydancer.mp4`;
         const outputVideoPath = `./files/temporaryFinalVideo/${randomFileName}.mp4`;
         const tempYoutubePath = `./files/temporaryYoutube/${randomFileName}.wav`;
 

@@ -43,7 +43,7 @@ module.exports = {
     */
     run: async (client, interaction) => {
 
-        let whiteListed = ['USER_ID]; //premium features
+        let whiteListed = ['USER_ID']; //premium features
 
         const author = interaction.user.id;
         const cooldown = cooldowns.get(author);

@@ -43,6 +43,8 @@ module.exports = {
     */
     run: async (client, interaction) => {
 
+        let whiteListed = ['USER_ID]; //premium features
+
         const author = interaction.user.id;
         const cooldown = cooldowns.get(author);
         cooldownUser(author, 1);
@@ -58,14 +60,16 @@ module.exports = {
         const endTime = interaction.options.getString("end");
 
         var danceStart = 0;
-        var danceEnd = 60;
+        var danceEnd = whiteListed.includes(interaction.user.id) ? 600 : 60;
+        const maxInput = whiteListed.includes(interaction.user.id) ? 1800 : 600;
 
         const randomFileName = interaction.user.id;
         const outputVideoPath = `./files/temporaryFinalVideo/${randomFileName}.mp4`;
         const tempYoutubePath = `./files/temporaryYoutube/${randomFileName}.wav`;
+        const videoDuration = 60;
 
-        
-        if (cooldown && interaction.user.id !== "817843037593403402") {
+
+        if (cooldown && !whiteListed.includes(interaction.user.id)) {
             const remaining = humanizeDuration(cooldown - Date.now(), { units: ['m', 's'], round: true });
             interaction.reply({content: `You are On Cooldown, wait \`${remaining}\``, ephemeral: true});
             return;
@@ -82,7 +86,7 @@ module.exports = {
         } else if (audioUrl && !audioFile) {
             const link = audioUrl.toLowerCase();
             if (!link.startsWith("https://")) {
-                interaction.reply({content: `${emojiError} - ** Please provide a correct link (supported are __Youtube__, __SoundCloud__ and __Audio/Video__ links (use \`/help boydancer\` for more information) **`, ephemeral: true});
+                interaction.reply({content: `${emojiError} - ** Please provide a correct link (supported are __Youtube__. __SoundCloud__ and __Audio/Video__ links (use \`/help boydancer\` for more information) **`, ephemeral: true});
                 cooldownUser(author, 10);
                 return;
             } else if (isYoutubeLink(audioUrl)) {
@@ -93,12 +97,13 @@ module.exports = {
                         cooldownUser(author, 10);
                         return;
                     } else {
-                        const length = await checkYoutubeVideoLength(audioUrl);
-                        if (length > 600) {
+                        const lengthNum = await checkYoutubeVideoLength(audioUrl);
+                        const length = parseInt(lengthNum)
+                        if (length > maxInput) {
                             interaction.reply({content: `${emojiError} - ** Please ensure that the __YouTube Video__ is __10 minutes (600 seconds)__ or shorter **`, ephemeral: true});
                             cooldownUser(author, 10);
                             return;
-                        } else { //fun part
+                        } else {
                             if (startTime && endTime) {
                                 const start = giveSecondsFromTime(startTime);
                                 const end = giveSecondsFromTime(endTime);
@@ -110,8 +115,8 @@ module.exports = {
                                     interaction.reply({content: `${emojiError} - ** Please ensure your __START__ time is shorter than __END__ time **`, ephemeral: true});
                                     cooldownUser(author, 10);
                                     return;
-                                } else if (start + 60 < end) {
-                                    interaction.reply({content: `${emojiError} - ** The time between __START__ and __END__ is over \`60\` seconds **`, ephemeral: true});
+                                } else if (start + danceEnd < end) {
+                                    interaction.reply({content: `${emojiError} - ** The time between __START__ and __END__ is over \`${danceEnd}\` seconds **`, ephemeral: true});
                                     cooldownUser(author, 10);
                                     return;
                                 } else if (start === end) {
@@ -135,10 +140,10 @@ module.exports = {
                                     interaction.reply({content: `The __END__ time can not be \`0\` seconds`, ephemeral: true});
                                     cooldownUser(author, 10);
                                     return;
-                                } else if (end <= 60) {
+                                } else if (end <= danceEnd) {
                                     danceEnd = end;
-                                } else if (end > 60) {
-                                    danceStart = end - 60;
+                                } else if (end > danceEnd) {
+                                    danceStart = end - danceEnd;
                                     danceEnd = end;
                                 } else {
                                     interaction.reply({content: `${emojiError} - ** Please insert a correct __END__ time **`, ephemeral: true});
@@ -153,13 +158,12 @@ module.exports = {
                                     return;
                                 } else if (start === 0) {
                             		danceStart = start;
-                            		danceEnd = start + 60;
-                        		} else if (start + 60 > length) {
+                        		} else if (start + danceEnd > length) {
                                     danceStart = start;
                                     danceEnd = length;
                                 } else if (start) {
                                     danceStart = start;
-                                    danceEnd = start + 60;
+                                    danceEnd = start + danceEnd;
                                 } else {
                                     interaction.reply({content: `${emojiError} - ** Please insert a correct __START__ time **`, ephemeral: true});
                                     cooldownUser(author, 10);
@@ -170,14 +174,22 @@ module.exports = {
                             await downloadYoutubeVideo(audioUrl);
                             cooldownUser(author, 2);
                             try {
-                                await applyAudioWithDelay(tempYoutubePath, danceStart, length < 60 ? length : danceEnd, 5000);
-                                await interaction.editReply({content: `${emojiSuccess} - Here is your boydancer ${interaction.user}:`, files: [{ attachment: outputVideoPath, name: "Boydancer.mp4"}]});
+                                let messageCounter = 0;
+                                const incrementMessageCounter = () => {messageCounter++;};
+                                client.on('messageCreate', (message) => {if (message) {incrementMessageCounter();}});
+                                await applyAudioWithDelay(tempYoutubePath, danceStart, length < danceEnd ? length : danceEnd, 5000);
+                                if (messageCounter > 10) {
+                                    await interaction.followUp({content: `${emojiSuccess} - Here is your boydancer ${interaction.user}:`, files: [{ attachment: outputVideoPath, name: "Boydancer.mp4"}]});
+                                } else {
+                                    await interaction.editReply({content: `${emojiSuccess} - Here is your boydancer ${interaction.user}:`, files: [{ attachment: outputVideoPath, name: "Boydancer.mp4"}]});
+                                }
                                 fs.unlinkSync(outputVideoPath);
                                 fs.unlinkSync(tempYoutubePath);
                                 cooldownUser(author, 60);
+                                await client.usage.set(`${interaction.user.id}.successful`, usedSuccessful ? parseInt(usedSuccessful) + 1 : 1);
                             } catch (error) {
                                 console.error('Error generating the video:', error);
-                                interaction.followUp('An error occurred while generating the video.');
+                                interaction.followUp('An error occurred while generating the video. (Make sure the Video is not Age Restricted)');
                                 cooldownUser(author, 10);
                                 fs.unlinkSync(tempYoutubePath);
                             }
@@ -191,24 +203,24 @@ module.exports = {
             } else if (isSoundCloudLink(audioUrl)) {
                 if (isWorkingLink_SoundCloud(audioUrl)) {
                     const length = await checkSoundCloudLength(audioUrl);
-                        if (length > 600) {
+                        if (length > maxInput) {
                             interaction.reply({content: `${emojiError} - ** Please ensure that the __SoundCloud Song__ is __10 minutes (600 seconds)__ or shorter **`, ephemeral: true});
                             cooldownUser(author, 10);
                             return;
-                        } else { //fun part
+                        } else {
                             if (startTime && endTime) {
                                 const start = giveSecondsFromTime(startTime);
                                 const end = giveSecondsFromTime(endTime);
                                 if (start > length || end > length) {
-                                    interaction.reply({content: `${emojiError} - ** Please ensure your __START__ and/or __END__ times are shorter than the song's duration **`, ephemeral: true});
+                                    interaction.reply({content: `${emojiError} - ** Please ensure your __START__ and/or __END__ times are shorter than the video's duration **`, ephemeral: true});
                                     cooldownUser(author, 10);
                                     return;
                                 } else if (start >= end) {
                                     interaction.reply({content: `${emojiError} - ** Please ensure your __START__ time is shorter than __END__ time **`, ephemeral: true});
                                     cooldownUser(author, 10);
                                     return;
-                                } else if (start + 60 < end) {
-                                    interaction.reply({content: `${emojiError} - ** The time between __START__ and __END__ is over \`60\` seconds **`, ephemeral: true});
+                                } else if (start + danceEnd < end) {
+                                    interaction.reply({content: `${emojiError} - ** The time between __START__ and __END__ is over \`${danceEnd}\` seconds **`, ephemeral: true});
                                     cooldownUser(author, 10);
                                     return;
                                 } else if (start === end) {
@@ -232,10 +244,10 @@ module.exports = {
                                     interaction.reply({content: `The __END__ time can not be \`0\` seconds`, ephemeral: true});
                                     cooldownUser(author, 10);
                                     return;
-                                } else if (end <= 60) {
+                                } else if (end <= danceEnd) {
                                     danceEnd = end;
-                                } else if (end > 60) {
-                                    danceStart = end - 60;
+                                } else if (end > danceEnd) {
+                                    danceStart = end - danceEnd;
                                     danceEnd = end;
                                 } else {
                                     interaction.reply({content: `${emojiError} - ** Please insert a correct __END__ time **`, ephemeral: true});
@@ -250,13 +262,12 @@ module.exports = {
                                     return;
                                 } else if (start === 0) {
                             		danceStart = start;
-                            		danceEnd = start + 60;
-                        		} else if (start + 60 > length) {
+                        		} else if (start + danceEnd > length) {
                                     danceStart = start;
                                     danceEnd = length;
                                 } else if (start) {
                                     danceStart = start;
-                                    danceEnd = start + 60;
+                                    danceEnd = start + danceEnd;
                                 } else {
                                     interaction.reply({content: `${emojiError} - ** Please insert a correct __START__ time **`, ephemeral: true});
                                     cooldownUser(author, 10);
@@ -267,8 +278,15 @@ module.exports = {
                             await downloadSoundCloud(audioUrl);
                             cooldownUser(author, 2);
                             try {
-                                await applyAudioWithDelay(tempYoutubePath, danceStart, length < 60 ? length : danceEnd, 5000);
-                                await interaction.editReply({content: `${emojiSuccess} - Here is your boydancer ${interaction.user}:`, files: [{ attachment: outputVideoPath, name: "Boydancer.mp4"}]});
+                                let messageCounter = 0;
+                                const incrementMessageCounter = () => {messageCounter++;};
+                                client.on('messageCreate', (message) => {if (message) {incrementMessageCounter();}});
+                                await applyAudioWithDelay(tempYoutubePath, danceStart, length < danceEnd ? length : danceEnd, 5000);
+                                if (messageCounter > 10) {
+                                    await interaction.followUp({content: `${emojiSuccess} - Here is your boydancer ${interaction.user}:`, files: [{ attachment: outputVideoPath, name: "Boydancer.mp4"}]});
+                                } else {
+                                    await interaction.editReply({content: `${emojiSuccess} - Here is your boydancer ${interaction.user}:`, files: [{ attachment: outputVideoPath, name: "Boydancer.mp4"}]});
+                                }
                                 fs.unlinkSync(outputVideoPath);
                                 fs.unlinkSync(tempYoutubePath);
                                 cooldownUser(author, 60);
@@ -280,7 +298,7 @@ module.exports = {
                             }
                         }
                 } else {
-                    interaction.reply({content: `${emojiError} - ** The __SoundCloud Link__ you provided Does Not Exist **`, ephemeral: true});
+                    interaction.reply({content: `${emojiError} - ** The __SoundCloud Link__ you provided Does Not Exist. __Shortened Links__ also don't work **`, ephemeral: true});
                     cooldownUser(author, 10);
                     return;
                 }
@@ -298,8 +316,8 @@ module.exports = {
                             interaction.reply({content: `${emojiError} - ** Please ensure your __START__ time is shorter than __END__ time **`, ephemeral: true});
                             cooldownUser(author, 10);
                             return;
-                        } else if (start + 60 < end) {
-                            interaction.reply({content: `${emojiError} - ** The time between __START__ and __END__ is over \`60\` seconds **`, ephemeral: true});
+                        } else if (start + danceEnd < end) {
+                            interaction.reply({content: `${emojiError} - ** The time between __START__ and __END__ is over \`${danceEnd}\` seconds **`, ephemeral: true});
                             cooldownUser(author, 10);
                             return;
                         } else if (start === end) {
@@ -323,10 +341,10 @@ module.exports = {
                             interaction.reply({content: `The __END__ time can not be \`0\` seconds`, ephemeral: true});
                             cooldownUser(author, 10);
                             return;
-                        } else if (end <= 60) {
+                        } else if (end <= danceEnd) {
                             danceEnd = end;
-                        } else if (end > 60) {
-                            danceStart = end - 60;
+                        } else if (end > danceEnd) {
+                            danceStart = end - danceEnd;
                             danceEnd = end;
                         } else {
                             interaction.reply({content: `${emojiError} - ** Please insert a correct __END__ time **`, ephemeral: true});
@@ -341,13 +359,12 @@ module.exports = {
                             return;
                         } else if (start === 0) {
                             danceStart = start;
-                            danceEnd = start + 60;
-                        } else if (start + 60 > length) {
+                        } else if (start + danceEnd > length) {
                             danceStart = start;
                             danceEnd = length;
                         } else if (start) {
                             danceStart = start;
-                            danceEnd = start + 60;
+                            danceEnd = start + danceEnd;
                         } else {
                             interaction.reply({content: `${emojiError} - ** Please insert a correct __START__ time **`, ephemeral: true});
                             cooldownUser(author, 10);
@@ -357,10 +374,18 @@ module.exports = {
                     interaction.reply({content: `Generating video... <a:boypet2:1146012115451265035>`});
                     cooldownUser(author, 1);
                     try {
-                        await applyAudioToVideoFILE(audioUrl, danceStart, length < 60 ? length : danceEnd);
-                        await interaction.editReply({content: `${emojiSuccess} - Here is your boydancer ${interaction.user}:`, files: [{ attachment: outputVideoPath, name: "Boydancer.mp4"}]});
+                        let messageCounter = 0;
+                        const incrementMessageCounter = () => {messageCounter++;};
+                        client.on('messageCreate', (message) => {if (message) {incrementMessageCounter();}});
+                        await applyAudioWithDelay(tempYoutubePath, danceStart, length < danceEnd ? length : danceEnd, 5000);
+                        if (messageCounter > 10) {
+                            await interaction.followUp({content: `${emojiSuccess} - Here is your boydancer ${interaction.user}:`, files: [{ attachment: outputVideoPath, name: "Boydancer.mp4"}]});
+                        } else {
+                            await interaction.editReply({content: `${emojiSuccess} - Here is your boydancer ${interaction.user}:`, files: [{ attachment: outputVideoPath, name: "Boydancer.mp4"}]});
+                        }
                         fs.unlinkSync(outputVideoPath);
                         cooldownUser(author, 60);
+                        await client.usage.set(`${interaction.user.id}.successful`, usedSuccessful ? parseInt(usedSuccessful) + 1 : 1);
                     } catch (error) {
                         console.error('Error generating the video:', error);
                         interaction.followUp('An error occurred while generating the video.');
@@ -396,8 +421,8 @@ module.exports = {
                             interaction.reply({content: `${emojiError} - ** Please ensure your __START__ time is shorter than __END__ time **`, ephemeral: true});
                             cooldownUser(author, 10);
                             return;
-                        } else if (start + 60 < end) {
-                            interaction.reply({content: `${emojiError} - ** The time between __START__ and __END__ is over \`60\` seconds **`, ephemeral: true});
+                        } else if (start + danceEnd < end) {
+                            interaction.reply({content: `${emojiError} - ** The time between __START__ and __END__ is over \`${danceEnd}\` seconds **`, ephemeral: true});
                             cooldownUser(author, 10);
                             return;
                         } else if (start === end) {
@@ -421,10 +446,10 @@ module.exports = {
                             interaction.reply({content: `The __END__ time can not be \`0\` seconds`, ephemeral: true});
                             cooldownUser(author, 10);
                             return;
-                        } else if (end <= 60) {
+                        } else if (end <= danceEnd) {
                             danceEnd = end;
-                        } else if (end > 60) {
-                            danceStart = end - 60;
+                        } else if (end > danceEnd) {
+                            danceStart = end - danceEnd;
                             danceEnd = end;
                         } else {
                             interaction.reply({content: `${emojiError} - ** Please insert a correct __END__ time **`, ephemeral: true});
@@ -439,13 +464,12 @@ module.exports = {
                             return;
                         } else if (start === 0) {
                             danceStart = start;
-                            danceEnd = start + 60;
-                        } else if (start + 60 > length) {
+                        } else if (start + danceEnd > length) {
                             danceStart = start;
                             danceEnd = length;
                         } else if (start) {
                             danceStart = start;
-                            danceEnd = start + 60;
+                            danceEnd = start + danceEnd;
                         } else {
                             interaction.reply({content: `${emojiError} - ** Please insert a correct __START__ time **`, ephemeral: true});
                             cooldownUser(author, 10);
@@ -455,10 +479,18 @@ module.exports = {
                     interaction.reply({content: `Generating video... <a:boypet2:1146012115451265035>`});
                     cooldownUser(author, 1);
                     try {
-                        await applyAudioToVideoFILE(file, danceStart, length < 60 ? length : danceEnd);
-                        await interaction.editReply({content: `${emojiSuccess} - Here is your boydancer:`, files: [{ attachment: outputVideoPath, name: "Boydancer.mp4"}]});
+                        let messageCounter = 0;
+                        const incrementMessageCounter = () => {messageCounter++;};
+                        client.on('messageCreate', (message) => {if (message) {incrementMessageCounter();}});
+                        await applyAudioWithDelay(tempYoutubePath, danceStart, length < danceEnd ? length : danceEnd, 5000);
+                        if (messageCounter > 10) {
+                            await interaction.followUp({content: `${emojiSuccess} - Here is your boydancer ${interaction.user}:`, files: [{ attachment: outputVideoPath, name: "Boydancer.mp4"}]});
+                        } else {
+                            await interaction.editReply({content: `${emojiSuccess} - Here is your boydancer ${interaction.user}:`, files: [{ attachment: outputVideoPath, name: "Boydancer.mp4"}]});
+                        }
                         fs.unlinkSync(outputVideoPath);
                         cooldownUser(author, 60);
+                        await client.usage.set(`${interaction.user.id}.successful`, usedSuccessful ? parseInt(usedSuccessful) + 1 : 1);
                     } catch (error) {
                         console.error('Error generating the video:', error);
                         interaction.followUp('An error occurred while generating the video.');
@@ -494,15 +526,19 @@ module.exports = {
         //audio applying function
 
         async function applyAudioToVideoFILE(file, start, end) {
+            console.log(start)
+            console.log(end)
             const duration = end - start;
+            const repeatCount = Math.ceil(duration / videoDuration);
+            console.log(repeatCount > 5 ? 10 : repeatCount)
             return new Promise((resolve, reject) => {
                 const ffmpegProcess = ffmpeg()
-                    .input(`./files/permanentFiles/theboydancer.mp4`)
+                    .input(`./files/permanentFiles/theboydancer${repeatCount}.mp4`)
                     .inputOptions(['-ss 0'])
                     .input(file)
                     .inputOptions(['-ss ' + start.toString()])
                     .complexFilter([
-                        '[0:a]volume=0.2[audio];[1:a]volume=1[music];[audio][music]amix=inputs=2:duration=first:dropout_transition=2[audioout]'
+                        '[1:a]volume=1[music];[music]amix=inputs=1[audioout]'
                     ])
                     .outputOptions(['-map 0:v', '-map [audioout]', '-c:v copy', '-c:a aac', '-t ' + duration.toString(), '-y'])
                     .output(outputVideoPath)
@@ -514,6 +550,7 @@ module.exports = {
                     });
         
                 ffmpegProcess.run();
+
             });
         }
 
@@ -550,7 +587,6 @@ module.exports = {
                 return isLive;
             } catch (error) {
                 console.error(error);
-                interaction.reply(`${client.config.emoji.error} - There was an **ERROR** getting **Youtube Video** info`);
                 return;
             }
         }
@@ -576,16 +612,16 @@ module.exports = {
             console.error('Error:', err);
             });
         }
-
+        
         // SoundCloud Functions
 
-        function isSoundCloudLink(Url) {
+        function isSoundCloudLink(url) {
             const patterns = [
                 /^https?:\/\/(soundcloud\.com)\/(.*)$/,
-              ];
-          
+            ];
+        
             for (const pattern of patterns) {
-                if (pattern.test(Url)) {
+                if (pattern.test(url)) {
                     return true;
                 }
             }

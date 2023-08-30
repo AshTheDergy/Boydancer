@@ -42,8 +42,25 @@ module.exports = {
     * @param {CommandInteraction} interaction
     */
     run: async (client, interaction) => {
+        
+        await client.usage.set(`${interaction.user.id}.userId`, interaction.user.id);
+        let used = await client.usage.get(`${interaction.user.id}`);
+        if (!used) {
+            await client.usage.set(`${interaction.user.id}.username`, interaction.user.username);
+        } else if (used.username !== interaction.user.username) {
+            client.usage.update(`${interaction.user.id}.username`, interaction.user.username);
+        }
+        const usedSuccessful = used?.successful;
+        const usedAll = used?.all;
+        await usedAll ? client.usage.inc(`${interaction.user.id}.all`) : client.usage.set(`${interaction.user.id}.all`, 1);
 
-        let whiteListed = ['USER_ID']; //premium features
+        let whiteListed = ['817843037593403402'];
+        const data = await client.premium.values;
+        for (const key in data) {
+    		if (data.hasOwnProperty(key)) {
+        		whiteListed.push(`${data[key].userId}`);
+    		}
+		}
 
         const author = interaction.user.id;
         const cooldown = cooldowns.get(author);
@@ -377,7 +394,7 @@ module.exports = {
                         let messageCounter = 0;
                         const incrementMessageCounter = () => {messageCounter++;};
                         client.on('messageCreate', (message) => {if (message) {incrementMessageCounter();}});
-                        await applyAudioWithDelay(tempYoutubePath, danceStart, length < danceEnd ? length : danceEnd, 5000);
+                        await applyAudioWithDelay(file, danceStart, length < danceEnd ? length : danceEnd, 5000);
                         if (messageCounter > 10) {
                             await interaction.followUp({content: `${emojiSuccess} - Here is your boydancer ${interaction.user}:`, files: [{ attachment: outputVideoPath, name: "Boydancer.mp4"}]});
                         } else {
@@ -482,7 +499,7 @@ module.exports = {
                         let messageCounter = 0;
                         const incrementMessageCounter = () => {messageCounter++;};
                         client.on('messageCreate', (message) => {if (message) {incrementMessageCounter();}});
-                        await applyAudioWithDelay(tempYoutubePath, danceStart, length < danceEnd ? length : danceEnd, 5000);
+                        await applyAudioWithDelay(file, danceStart, length < danceEnd ? length : danceEnd, 5000);
                         if (messageCounter > 10) {
                             await interaction.followUp({content: `${emojiSuccess} - Here is your boydancer ${interaction.user}:`, files: [{ attachment: outputVideoPath, name: "Boydancer.mp4"}]});
                         } else {

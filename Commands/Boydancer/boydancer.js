@@ -60,7 +60,7 @@ module.exports = {
     		if (data.hasOwnProperty(key)) {
         		whiteListed.push(`${data[key].userId}`);
     		}
-		}
+	}
 
         const author = interaction.user.id;
         const cooldown = cooldowns.get(author);
@@ -191,15 +191,8 @@ module.exports = {
                             await downloadYoutubeVideo(audioUrl);
                             cooldownUser(author, 2);
                             try {
-                                let messageCounter = 0;
-                                const incrementMessageCounter = () => {messageCounter++;};
-                                client.on('messageCreate', (message) => {if (message) {incrementMessageCounter();}});
                                 await applyAudioWithDelay(tempYoutubePath, danceStart, length < danceEnd ? length : danceEnd, 5000);
-                                if (messageCounter > 10) {
-                                    await interaction.followUp({content: `${emojiSuccess} - Here is your boydancer ${interaction.user}:`, files: [{ attachment: outputVideoPath, name: "Boydancer.mp4"}]});
-                                } else {
-                                    await interaction.editReply({content: `${emojiSuccess} - Here is your boydancer ${interaction.user}:`, files: [{ attachment: outputVideoPath, name: "Boydancer.mp4"}]});
-                                }
+                                await interaction.editReply({content: `${emojiSuccess} - Here is your boydancer ${interaction.user}:`, files: [{ attachment: outputVideoPath, name: "Boydancer.mp4"}]});
                                 fs.unlinkSync(outputVideoPath);
                                 fs.unlinkSync(tempYoutubePath);
                                 cooldownUser(author, 60);
@@ -295,15 +288,8 @@ module.exports = {
                             await downloadSoundCloud(audioUrl);
                             cooldownUser(author, 2);
                             try {
-                                let messageCounter = 0;
-                                const incrementMessageCounter = () => {messageCounter++;};
-                                client.on('messageCreate', (message) => {if (message) {incrementMessageCounter();}});
                                 await applyAudioWithDelay(tempYoutubePath, danceStart, length < danceEnd ? length : danceEnd, 5000);
-                                if (messageCounter > 10) {
-                                    await interaction.followUp({content: `${emojiSuccess} - Here is your boydancer ${interaction.user}:`, files: [{ attachment: outputVideoPath, name: "Boydancer.mp4"}]});
-                                } else {
-                                    await interaction.editReply({content: `${emojiSuccess} - Here is your boydancer ${interaction.user}:`, files: [{ attachment: outputVideoPath, name: "Boydancer.mp4"}]});
-                                }
+                                await interaction.editReply({content: `${emojiSuccess} - Here is your boydancer ${interaction.user}:`, files: [{ attachment: outputVideoPath, name: "Boydancer.mp4"}]});
                                 fs.unlinkSync(outputVideoPath);
                                 fs.unlinkSync(tempYoutubePath);
                                 cooldownUser(author, 60);
@@ -391,15 +377,8 @@ module.exports = {
                     interaction.reply({content: `Generating video... <a:boypet2:1146012115451265035>`});
                     cooldownUser(author, 1);
                     try {
-                        let messageCounter = 0;
-                        const incrementMessageCounter = () => {messageCounter++;};
-                        client.on('messageCreate', (message) => {if (message) {incrementMessageCounter();}});
                         await applyAudioWithDelay(file, danceStart, length < danceEnd ? length : danceEnd, 5000);
-                        if (messageCounter > 10) {
-                            await interaction.followUp({content: `${emojiSuccess} - Here is your boydancer ${interaction.user}:`, files: [{ attachment: outputVideoPath, name: "Boydancer.mp4"}]});
-                        } else {
-                            await interaction.editReply({content: `${emojiSuccess} - Here is your boydancer ${interaction.user}:`, files: [{ attachment: outputVideoPath, name: "Boydancer.mp4"}]});
-                        }
+                        await interaction.editReply({content: `${emojiSuccess} - Here is your boydancer ${interaction.user}:`, files: [{ attachment: outputVideoPath, name: "Boydancer.mp4"}]});
                         fs.unlinkSync(outputVideoPath);
                         cooldownUser(author, 60);
                         await client.usage.set(`${interaction.user.id}.successful`, usedSuccessful ? parseInt(usedSuccessful) + 1 : 1);
@@ -496,15 +475,9 @@ module.exports = {
                     interaction.reply({content: `Generating video... <a:boypet2:1146012115451265035>`});
                     cooldownUser(author, 1);
                     try {
-                        let messageCounter = 0;
-                        const incrementMessageCounter = () => {messageCounter++;};
-                        client.on('messageCreate', (message) => {if (message) {incrementMessageCounter();}});
                         await applyAudioWithDelay(file, danceStart, length < danceEnd ? length : danceEnd, 5000);
-                        if (messageCounter > 10) {
-                            await interaction.followUp({content: `${emojiSuccess} - Here is your boydancer ${interaction.user}:`, files: [{ attachment: outputVideoPath, name: "Boydancer.mp4"}]});
-                        } else {
-                            await interaction.editReply({content: `${emojiSuccess} - Here is your boydancer ${interaction.user}:`, files: [{ attachment: outputVideoPath, name: "Boydancer.mp4"}]});
-                        }
+                        await interaction.editReply({content: `${emojiSuccess} - Here is your boydancer ${interaction.user}:`, files: [{ attachment: outputVideoPath, name: "Boydancer.mp4"}]});
+                        
                         fs.unlinkSync(outputVideoPath);
                         cooldownUser(author, 60);
                         await client.usage.set(`${interaction.user.id}.successful`, usedSuccessful ? parseInt(usedSuccessful) + 1 : 1);
@@ -543,14 +516,11 @@ module.exports = {
         //audio applying function
 
         async function applyAudioToVideoFILE(file, start, end) {
-            console.log(start)
-            console.log(end)
             const duration = end - start;
             const repeatCount = Math.ceil(duration / videoDuration);
-            console.log(repeatCount > 5 ? 10 : repeatCount)
             return new Promise((resolve, reject) => {
                 const ffmpegProcess = ffmpeg()
-                    .input(`./files/permanentFiles/theboydancer${repeatCount}.mp4`)
+                    .input(`./files/permanentFiles/theboydancer${repeatCount > 5 ? 10 : repeatCount}.mp4`)
                     .inputOptions(['-ss 0'])
                     .input(file)
                     .inputOptions(['-ss ' + start.toString()])

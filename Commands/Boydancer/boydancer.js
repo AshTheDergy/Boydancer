@@ -115,7 +115,7 @@ module.exports = {
                         return;
                     } else {
                         const lengthNum = await checkYoutubeVideoLength(audioUrl);
-                        const length = parseInt(lengthNum)
+                        const length = parseInt(lengthNum);
                         if (length > maxInput) {
                             interaction.reply({content: `${emojiError} - ** Please ensure that the __YouTube Video__ is __10 minutes (600 seconds)__ or shorter **`, ephemeral: true});
                             cooldownUser(author, 10);
@@ -399,7 +399,11 @@ module.exports = {
             }
         } else if (audioFile && !audioUrl) {
             const file = audioFile.url;
-            if (!correctFile.some(extension => file.endsWith(extension))) {
+            if (audioFile.size >= 50000000) {
+                interaction.reply({content: `${emojiError} - The Video you provided is over __50 MB__`, ephemeral: true});
+                cooldownUser(author, 10);
+                return;
+            } else if (!correctFile.some(extension => file.endsWith(extension))) {
                 interaction.reply({content: `${emojiError} - Please use a correct File (use \`/help boydancer\` for more information)`, ephemeral: true});
                 cooldownUser(author, 10);
                 return;

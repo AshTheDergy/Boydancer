@@ -60,7 +60,7 @@ module.exports = {
     		if (data.hasOwnProperty(key)) {
         		whiteListed.push(`${data[key].userId}`);
     		}
-	}
+		}
 
         const author = interaction.user.id;
         const cooldown = cooldowns.get(author);
@@ -377,7 +377,7 @@ module.exports = {
                     interaction.reply({content: `Generating video... <a:boypet2:1146012115451265035>`});
                     cooldownUser(author, 1);
                     try {
-                        await applyAudioWithDelay(file, danceStart, length < danceEnd ? length : danceEnd, 5000);
+                        await applyAudioWithDelay(audioUrl, danceStart, length < danceEnd ? length : danceEnd, 5000);
                         await interaction.editReply({content: `${emojiSuccess} - Here is your boydancer ${interaction.user}:`, files: [{ attachment: outputVideoPath, name: "Boydancer.mp4"}]});
                         fs.unlinkSync(outputVideoPath);
                         cooldownUser(author, 60);

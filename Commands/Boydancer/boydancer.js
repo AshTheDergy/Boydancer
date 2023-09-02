@@ -16,6 +16,22 @@ module.exports = {
     type: "CHAT_INPUT",
     options: [
         {
+            name: "viber",
+            description: "Select your background Viber",
+            required: true,
+            type: 4,
+            choices: [
+                {
+                    name: "boydancer (bpm: 150)",
+                    value: 1,
+                },
+                {
+                    name: "boyjammer (bpm: ?)",
+                    value: 2
+                },
+            ]
+        },
+        {
             name: "file",
             description: "A file (.mp3, .mp4, etc)",
             type: 11,
@@ -32,8 +48,13 @@ module.exports = {
         },
         {
             name: "end",
-            description: "(format 0:00) Leaving this blank will make the video 1 minute long",
+            description: "(format 0:00) Leaving this blank will make the video 1 minute long (10 minute for premium)",
             type: 3,
+        },
+        {
+            name: "speed",
+            description: "Choose audio speed percentage (50% - 200%)",
+            type: 4,
         }
     ],
 
@@ -54,14 +75,6 @@ module.exports = {
         const usedAll = used?.all;
         await usedAll ? client.usage.inc(`${interaction.user.id}.all`) : client.usage.set(`${interaction.user.id}.all`, 1);
 
-        let whiteListed = ['817843037593403402'];
-        const data = await client.premium.values;
-        for (const key in data) {
-    		if (data.hasOwnProperty(key)) {
-        		whiteListed.push(`${data[key].userId}`);
-    		}
-		}
-
         const author = interaction.user.id;
         const cooldown = cooldowns.get(author);
         cooldownUser(author, 1);
@@ -75,15 +88,21 @@ module.exports = {
         const audioUrl = interaction.options.getString("link");
         const startTime = interaction.options.getString("start");
         const endTime = interaction.options.getString("end");
+        const selectedSpeed = interaction.options.getInteger("speed")
+        
+        const viber = interaction.options.getInteger("viber");
+        const backgroundViber = `./files/permanentFiles/back${viber}.mp4`
+
+        const finalFileName = viber == 1 ? `Boydancer` : viber == 2 ? `Boyviber` : `gaysex`;
 
         var danceStart = 0;
-        var danceEnd = whiteListed.includes(interaction.user.id) ? 600 : 60;
+        var danceEnd = whiteListed.includes(interaction.user.id) ? 480 : 60;
         const maxInput = whiteListed.includes(interaction.user.id) ? 1800 : 600;
+        const audioSpeed = selectedSpeed ? selectedSpeed : 100;
 
         const randomFileName = interaction.user.id;
         const outputVideoPath = `./files/temporaryFinalVideo/${randomFileName}.mp4`;
         const tempYoutubePath = `./files/temporaryYoutube/${randomFileName}.wav`;
-        const videoDuration = 60;
 
 
         if (cooldown && !whiteListed.includes(interaction.user.id)) {
@@ -192,7 +211,7 @@ module.exports = {
                             cooldownUser(author, 2);
                             try {
                                 await applyAudioWithDelay(tempYoutubePath, danceStart, length < danceEnd ? length : danceEnd, 5000);
-                                await interaction.editReply({content: `${emojiSuccess} - Here is your boydancer ${interaction.user}:`, files: [{ attachment: outputVideoPath, name: "Boydancer.mp4"}]});
+                                await interaction.editReply({content: `${emojiSuccess} - Here is your boydancer ${interaction.user}:`, files: [{ attachment: outputVideoPath, name: `${finalFileName}.mp4`}]});
                                 fs.unlinkSync(outputVideoPath);
                                 fs.unlinkSync(tempYoutubePath);
                                 cooldownUser(author, 60);
@@ -289,7 +308,7 @@ module.exports = {
                             cooldownUser(author, 2);
                             try {
                                 await applyAudioWithDelay(tempYoutubePath, danceStart, length < danceEnd ? length : danceEnd, 5000);
-                                await interaction.editReply({content: `${emojiSuccess} - Here is your boydancer ${interaction.user}:`, files: [{ attachment: outputVideoPath, name: "Boydancer.mp4"}]});
+                                await interaction.editReply({content: `${emojiSuccess} - Here is your boydancer ${interaction.user}:`, files: [{ attachment: outputVideoPath, name: `${finalFileName}.mp4`}]});
                                 fs.unlinkSync(outputVideoPath);
                                 fs.unlinkSync(tempYoutubePath);
                                 cooldownUser(author, 60);
@@ -378,7 +397,7 @@ module.exports = {
                     cooldownUser(author, 1);
                     try {
                         await applyAudioWithDelay(audioUrl, danceStart, length < danceEnd ? length : danceEnd, 5000);
-                        await interaction.editReply({content: `${emojiSuccess} - Here is your boydancer ${interaction.user}:`, files: [{ attachment: outputVideoPath, name: "Boydancer.mp4"}]});
+                        await interaction.editReply({content: `${emojiSuccess} - Here is your boydancer ${interaction.user}:`, files: [{ attachment: outputVideoPath, name: `${finalFileName}.mp4`}]});
                         fs.unlinkSync(outputVideoPath);
                         cooldownUser(author, 60);
                         await client.usage.set(`${interaction.user.id}.successful`, usedSuccessful ? parseInt(usedSuccessful) + 1 : 1);
@@ -480,7 +499,7 @@ module.exports = {
                     cooldownUser(author, 1);
                     try {
                         await applyAudioWithDelay(file, danceStart, length < danceEnd ? length : danceEnd, 5000);
-                        await interaction.editReply({content: `${emojiSuccess} - Here is your boydancer ${interaction.user}:`, files: [{ attachment: outputVideoPath, name: "Boydancer.mp4"}]});
+                        await interaction.editReply({content: `${emojiSuccess} - Here is your boydancer ${interaction.user}:`, files: [{ attachment: outputVideoPath, name: `${finalFileName}.mp4`}]});
                         
                         fs.unlinkSync(outputVideoPath);
                         cooldownUser(author, 60);
@@ -520,30 +539,37 @@ module.exports = {
         //audio applying function
 
         async function applyAudioToVideoFILE(file, start, end) {
-            const duration = end - start;
-            const repeatCount = Math.ceil(duration / videoDuration);
+            const normalizedAudioSpeed = Math.min(200, Math.max(50, audioSpeed));
+            const calculatedDuration = (end - start) / (normalizedAudioSpeed / 100);
+            const duration = calculatedDuration <= danceEnd ? calculatedDuration : danceEnd;
             return new Promise((resolve, reject) => {
-                const ffmpegProcess = ffmpeg()
-                    .input(`./files/permanentFiles/theboydancer${repeatCount > 5 ? 10 : repeatCount}.mp4`)
-                    .inputOptions(['-ss 0'])
-                    .input(file)
-                    .inputOptions(['-ss ' + start.toString()])
-                    .complexFilter([
-                        '[1:a]volume=1[music];[music]amix=inputs=1[audioout]'
-                    ])
-                    .outputOptions(['-map 0:v', '-map [audioout]', '-c:v copy', '-c:a aac', '-t ' + duration.toString(), '-y'])
-                    .output(outputVideoPath)
-                    .on('error', (err) => {
-                        reject(err);
-                    })
-                    .on('end', () => {
-                        resolve(outputVideoPath);
-                    });
-        
-                ffmpegProcess.run();
-
+              const ffmpegProcess = ffmpeg()
+                .input(backgroundViber)
+                .inputOptions(['-ss 0'])
+                .input(file)
+                .inputOptions(['-ss ' + start.toString()])
+                .complexFilter([
+                  `[1:a]atempo=${normalizedAudioSpeed / 100},volume=1[music];[music]amix=inputs=1[audioout]`,
+                ])
+                .outputOptions([
+                  '-map 0:v',
+                  '-map [audioout]',
+                  '-c:v copy',
+                  '-c:a aac',
+                  '-t ' + duration.toString(),
+                  '-y',
+                ])
+                .output(outputVideoPath)
+                .on('error', (err) => {
+                  reject(err);
+                })
+                .on('end', () => {
+                  resolve(outputVideoPath);
+                });
+          
+              ffmpegProcess.run();
             });
-        }
+          }
 
         async function applyAudioWithDelay(file, start, end, delay) {
             await new Promise(resolve => setTimeout(resolve, delay));

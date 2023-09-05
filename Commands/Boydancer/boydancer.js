@@ -77,7 +77,7 @@ module.exports = {
 
         //command usage count tracking
 
-        let used = await client.usage.get(`${interaction.guild.id}`);
+        let used = await client.usage.get(`${interaction.guild.id}`); //if doesnt work, change to guildId
         if (!used[interaction.user.id]) {
             await client.usage.set(`${interaction.guild.id}.${interaction.user.id}.username`, interaction.user.username);
             await client.usage.set(`${interaction.guild.id}.${interaction.user.id}.userId`, interaction.user.id);

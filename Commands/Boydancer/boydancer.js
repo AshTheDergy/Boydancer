@@ -168,7 +168,7 @@ module.exports = {
                             cooldownUser(author, 10);
                             return;
                         } else {
-                            await interaction.reply({content: generationString});
+                            interaction.reply({content: generationString});
                             const [start, end] = await timeStamps (startTime, endTime, length);
                             await downloadYoutubeVideo(audioUrl);
                             cooldownUser(author, 5);
@@ -227,7 +227,7 @@ module.exports = {
                 }
             } else if (correctFile.some(extension => link.endsWith(extension))) {
                 const length = await getVideoDuration(audioUrl);
-                await interaction.reply({content: generationString});
+                interaction.reply({content: generationString});
                 const [start, end] = await timeStamps(startTime, endTime, length);
                 cooldownUser(author, 5);
                 try {
@@ -258,7 +258,7 @@ module.exports = {
                 cooldownUser(author, 10);
                 return;
             } else {
-                await interaction.reply({content: generationString});
+                interaction.reply({content: generationString});
                 const length = await getVideoDuration(file);
                 const [start, end] = await timeStamps(startTime, endTime, length);
                 cooldownUser(author, 5);
@@ -276,7 +276,7 @@ module.exports = {
                 }
             }
         } else if (!audioUrl && !audioFile && searchTitle) {
-            const videoUrl = await findVideoUrl(searchTitle)
+            const videoUrl = await findVideoUrl(searchTitle);
             if (await checkLiveStatus(videoUrl)) {
                 interaction.reply({content: `:blush: ** **- ** Please ensure the __Youtube Video__ is not a __Livestream__ **`, ephemeral: true}); //kys
                 cooldownUser(author, 10);
@@ -288,8 +288,8 @@ module.exports = {
                     cooldownUser(author, 10);
                     return;
                 } else {
-                    await interaction.reply({content: generationString});
-                    const [start, end] = await timeStamps (startTime, endTime, length);
+                    interaction.reply({content: generationString});
+                    const [start, end] = await timeStamps(startTime, endTime, length);
                     await downloadYoutubeVideo(videoUrl);
                     cooldownUser(author, 5);
                     try {

@@ -7,6 +7,7 @@ const PH = require("../../handlers/Client");
 const cooldowns = new Map();
 const humanizeDuration = require('humanize-duration');
 const scdl = require('soundcloud-downloader').default;
+const yts = require('yt-search');
 
 module.exports = {
     name: "boydancer",
@@ -42,6 +43,11 @@ module.exports = {
             type: 3,
         },
         {
+            name: "search",
+            description: "Search for a YouTube video title",
+            type: 3,
+        },
+        {
             name: "start",
             description: "(format 0:00) Leaving this blank will cause it to use the audio from 0:00",
             type: 3,
@@ -68,17 +74,22 @@ module.exports = {
     * @param {CommandInteraction} interaction
     */
     run: async (client, interaction) => {
-        
-        await client.usage.set(`${interaction.user.id}.userId`, interaction.user.id);
-        let used = await client.usage.get(`${interaction.user.id}`);
+
+        //command usage count tracking
+
+        let used = await client.usage.get(`${interaction.guild.id}.${interaction.user.id}`);
         if (!used) {
-            await client.usage.set(`${interaction.user.id}.username`, interaction.user.username);
+            await client.usage.set(`${interaction.guild.id}.${interaction.user.id}.username`, interaction.user.username);
+            await client.usage.set(`${interaction.guild.id}.${interaction.user.id}.userId`, interaction.user.id);
         } else if (used.username !== interaction.user.username) {
-            client.usage.update(`${interaction.user.id}.username`, interaction.user.username);
+            client.usage.set(`${interaction.guild.id}.${interaction.user.id}.username`, interaction.user.username);
         }
-        const usedSuccessful = used?.successful;
+
+        const usedSuccessful = used?.sccessful;
         const usedAll = used?.all;
-        await usedAll ? client.usage.inc(`${interaction.user.id}.all`) : client.usage.set(`${interaction.user.id}.all`, 1);
+        await usedAll ? await client.usage.inc(`${interaction.guild.id}.${interaction.user.id}.all`) : await client.usage.set(`${interaction.guild.id}.${interaction.user.id}.all`, 1);
+
+        //premium users
 
         let whiteListed = ['817843037593403402', '358936084278673415'];
         const data = await client.premium.values;
@@ -88,160 +99,95 @@ module.exports = {
     		}
 		}
 
+        //cooldowning
+
         const author = interaction.user.id;
         const cooldown = cooldowns.get(author);
         cooldownUser(author, 1);
 
-        const emojiError = client.config.emoji.error;
-
-        const correctFile = [".mp3", ".wav", ".aac", ".flac", ".ogg", ".mp4", ".avi", ".mov", ".webm", ".3gp", ".mkv", ".qt"];
+        //values
 
         const audioFile = interaction.options.getAttachment('file');
         const audioUrl = interaction.options.getString("link");
+        const searchTitle = interaction.options.getString("search");
         const startTime = interaction.options.getString("start");
         const endTime = interaction.options.getString("end");
         const selectedSpeed = interaction.options.getInteger("speed");
         const beatsPerMin = interaction.options.getInteger("bpm");
-        
         const viber = interaction.options.getInteger("viber");
-        const backgroundViber = `./files/permanentFiles/back${viber}.mp4`;
 
-        const finalFileName = viber == 1 ? `Boydancer` : viber == 2 ? `Boyviber` : `gaysex`;
+        //other variables
+
+        const correctFile = [".mp3", ".wav", ".aac", ".flac", ".ogg", ".mp4", ".avi", ".mov", ".webm", ".3gp", ".mkv", ".qt"];
+        const emojiError = client.config.emoji.error;
+
+        //important timing stuff
 
         var danceStart = 0;
         var danceEnd = whiteListed.includes(interaction.user.id) ? 480 : 60;
         const maxInput = whiteListed.includes(interaction.user.id) ? 1800 : 600;
         const audioSpeed = selectedSpeed ? selectedSpeed : 100;
 
+        //files
+
+        const backgroundViber = `./files/permanentFiles/back${viber}.mp4`;
         const randomFileName = interaction.user.id;
         const outputVideoPath = `./files/temporaryFinalVideo/${randomFileName}.mp4`;
         const tempYoutubePath = `./files/temporaryYoutube/${randomFileName}.wav`;
-        
-        const generateMessage = bpm ? `(BPM videos can load up to 5 minutes currently)\nGenerating video... <a:boypet2:1146012115451265035>` : `Generating video... <a:boypet2:1146012115451265035>`;
+        const tempVideoPath = `./files/otherTemp/${randomFileName}.mp4`;
+
+        //strings
+
+        const finalFileName = viber == 1 ? `Boydancer` : viber == 2 ? `Boyviber` : `gaysex`;
+        const generationString = `Generating video... <a:boypet2:1146012115451265035>`;
+        const finalMessage = `${interaction.user}${beatsPerMin > 225  && viber == 1 ? '\n<:boys:1148620467834474547> EPILEPSY WARNING <:boys:1148620467834474547>\n' : '\n'}Here is your boydancer:`;
 
         if (cooldown && !whiteListed.includes(interaction.user.id)) {
             const remaining = humanizeDuration(cooldown - Date.now(), { units: ['m', 's'], round: true });
             interaction.reply({content: `You are On Cooldown, wait \`${remaining}\``, ephemeral: true});
             return;
-        } else if (!audioUrl && !audioFile) {
+        } else if (!audioUrl && !audioFile && !searchTitle) {
             interaction.reply({content: `${emojiError} - ** Please provide a __Link__ or __File__ (use \`/help boydancer\` for more information) **`, ephemeral: true});
             cooldownUser(author, 10);
             return;
-        } else if (audioUrl && audioFile) {
-            let replies = [`Ha Ha very funny. "lem e putt url an fil as jok" :nerd::nerd::nerd:`, `No...`, `Kindly deactive yourself :blush:`, `Moderators, crush his skull`, `I'm gonna fuck your mother`, `2 Inputs, 2 Braincells`, `Go **Link** yourself some bitches and make them **Audio**`, `hey buddy. we're going to kill you and leave you laid out in a dumpster to rot`, `https://cdn.discordapp.com/attachments/873603423998705718/1145258850132443206/8apAlKE.gif`, `https://cdn.discordapp.com/attachments/873603423998705718/1145258963676430346/cqtykgb.gif`, `https://cdn.discordapp.com/attachments/873603423998705718/1145985376515788800/pjSHLOr.png`];
-            let randomMessage = Math.floor(Math.random() * replies.length);
-            interaction.reply(replies[randomMessage]);
-            cooldownUser(author, 60);
-            return;
-        } else if (audioUrl && !audioFile) {
-            const link = audioUrl.toLowerCase();
-            if (!link.startsWith("https://")) {
-                interaction.reply({content: `${emojiError} - ** Please provide a correct link (supported are __Youtube__. __SoundCloud__ and __Audio/Video__ links (use \`/help boydancer\` for more information) **`, ephemeral: true});
+        } else if (audioUrl && !audioFile && !searchTitle) {
+            if (!audioUrl.toLowerCase().startsWith("https://")) {
+                interaction.reply({content: `${emojiError} - ** Please provide a correct link (supported are __Youtube__ __SoundCloud__ and __Audio/Video__ links (use \`/help boydancer\` for more information) **`, ephemeral: true});
                 cooldownUser(author, 10);
                 return;
             } else if (isYoutubeLink(audioUrl)) {
-                if (isWorkingLink(audioUrl)) {
-                    const videoLive = await checkLiveStatus(audioUrl);
-                    if (videoLive) {
+                if (isWorkingLink_Youtube(audioUrl)) {
+                    if (await checkLiveStatus(audioUrl)) {
                         interaction.reply({content: `:blush: ** **- ** Please ensure the __Youtube Video__ is not a __Livestream__ **`, ephemeral: true}); //kys
                         cooldownUser(author, 10);
                         return;
                     } else {
-                        const lengthNum = await checkYoutubeVideoLength(audioUrl);
-                        const length = parseInt(lengthNum);
+                        const length = parseInt(await checkYoutubeVideoLength(audioUrl));
                         if (length > maxInput) {
                             interaction.reply({content: `${emojiError} - ** Please ensure that the __YouTube Video__ is __10 minutes (600 seconds)__ or shorter **`, ephemeral: true});
                             cooldownUser(author, 10);
                             return;
                         } else {
-                            if (startTime && endTime) {
-                                const start = giveSecondsFromTime(startTime);
-                                const end = giveSecondsFromTime(endTime);
-                                if (start > length || end > length) {
-                                    interaction.reply({content: `${emojiError} - ** Please ensure your __START__ and/or __END__ times are shorter than the video's duration **`, ephemeral: true});
-                                    cooldownUser(author, 10);
-                                    return;
-                                } else if (start >= end) {
-                                    interaction.reply({content: `${emojiError} - ** Please ensure your __START__ time is shorter than __END__ time **`, ephemeral: true});
-                                    cooldownUser(author, 10);
-                                    return;
-                                } else if (start + danceEnd < end) {
-                                    interaction.reply({content: `${emojiError} - ** The time between __START__ and __END__ is over \`${danceEnd}\` seconds **`, ephemeral: true});
-                                    cooldownUser(author, 10);
-                                    return;
-                                } else if (start === end) {
-                                    interaction.reply({content: `${emojiError} - ** The time between __START__ and __END__ has to be at least \`1\` second **`, ephemeral: true});
-                                    cooldownUser(author, 10);
-                                    return;
-                                } else if (start === 0 && end) {
-                                    danceStart = 0;
-                                    danceEnd = end;
-                                } else if (start && end) {
-                                    danceStart = start;
-                                    danceEnd = end;
-                                } else {
-                                    interaction.reply({content: `${emojiError} - ** Please insert a correct __START__ and/or __END__ time (use \`/hlep boydancer\` for more information) **`, ephemeral: true});
-                                    cooldownUser(author, 10);
-                                    return;
-                                }
-                            } else if (!startTime && endTime) {
-                                const end = giveSecondsFromTime(endTime);
-                                if (end > length) {
-                                    interaction.reply({content: `${emojiError} - ** Please ensure your __END__ time is shorter than the video **`, ephemeral: true});
-                                    cooldownUser(author, 10);
-                                    return;
-                                } else if (end === 0) {
-                                    interaction.reply({content: `The __END__ time can not be \`0\` seconds`, ephemeral: true});
-                                    cooldownUser(author, 10);
-                                    return;
-                                } else if (end <= danceEnd) {
-                                    danceEnd = end;
-                                } else if (end > danceEnd) {
-                                    danceStart = end - danceEnd;
-                                    danceEnd = end;
-                                } else {
-                                    interaction.reply({content: `${emojiError} - ** Please insert a correct __END__ time **`, ephemeral: true});
-                                    cooldownUser(author, 10);
-                                    return;
-                                }
-                            } else if (startTime && !endTime) {
-                                const start = giveSecondsFromTime(startTime);
-                                if (start > length) {
-                                    interaction.reply({content: `${emojiError} - ** Please make sure your __START__ time is smaller than the video **`, ephemeral: true});
-                                    cooldownUser(author, 10);
-                                    return;
-                                } else if (start === 0) {
-                            		danceStart = start;
-                        		} else if (start + danceEnd > length) {
-                                    danceStart = start;
-                                    danceEnd = length;
-                                } else if (start) {
-                                    danceStart = start;
-                                    danceEnd = start + danceEnd;
-                                } else {
-                                    interaction.reply({content: `${emojiError} - ** Please insert a correct __START__ time **`, ephemeral: true});
-                                    cooldownUser(author, 10);
-                                    return;
-                                }
-                            }
-                            interaction.reply({content: generateMessage});
+                            await interaction.reply({content: generationString});
+                            const [start, end] = await timeStamps (startTime, endTime, length);
                             await downloadYoutubeVideo(audioUrl);
-                            cooldownUser(author, 2);
+                            cooldownUser(author, 5);
                             try {
-                                await applyAudioWithDelay(tempYoutubePath, danceStart, length < danceEnd ? length : danceEnd, 5000);
-                                await interaction.editReply({content: `${interaction.user}${beatsPerMin > 225 ? '\nEPILEPSY WARNING\n' : '\n'}Here is your boydancer:`, files: [{ attachment: outputVideoPath, name: `${finalFileName}.mp4`}]});
+                                await applyAudioWithDelay(tempYoutubePath, start, length < end ? length : end, 5000);
+                                await interaction.editReply({content: finalMessage, files: [{ attachment: outputVideoPath, name: `${finalFileName}.mp4`}]});
                                 fs.unlinkSync(outputVideoPath);
                                 fs.unlinkSync(tempYoutubePath);
                                 cooldownUser(author, 60);
-                                await client.usage.set(`${interaction.user.id}.successful`, usedSuccessful ? parseInt(usedSuccessful) + 1 : 1);
+                                await client.usage.set(`${interaction.guild.id}.${interaction.user.id}.successful`, usedSuccessful ? parseInt(usedSuccessful) + 1 : 1);
                             } catch (error) {
                                 console.error('Error generating the video:', error);
                                 interaction.followUp('An error occurred while generating the video. (Make sure the Video is not Age Restricted)');
                                 cooldownUser(author, 10);
                                 fs.unlinkSync(tempYoutubePath);
+                                beatsPerMin ? fs.unlinkSync(tempVideoPath) : void(0);
                             }
                         }
-                        }
+                    }
                 } else {
                     interaction.reply({content: `${emojiError} - ** The __Youtube Video__ you provided Does Not Exist **`, ephemeral: true});
                     cooldownUser(author, 10);
@@ -250,97 +196,30 @@ module.exports = {
             } else if (isSoundCloudLink(audioUrl)) {
                 if (isWorkingLink_SoundCloud(audioUrl)) {
                     const length = await checkSoundCloudLength(audioUrl);
-                        if (length > maxInput) {
-                            interaction.reply({content: `${emojiError} - ** Please ensure that the __SoundCloud Song__ is __10 minutes (600 seconds)__ or shorter **`, ephemeral: true});
+                    if (length > maxInput) {
+                        interaction.reply({content: `${emojiError} - ** Please ensure that the __SoundCloud Song__ is __10 minutes (600 seconds)__ or shorter **`, ephemeral: true});
+                        cooldownUser(author, 10);
+                        return;
+                    } else {
+                        await interaction.reply({content: generationString});
+                        const [start, end] = await timeStamps(startTime, endTime, length);
+                        await downloadSoundCloud(audioUrl);
+                        cooldownUser(author, 5);
+                        try {
+                            await applyAudioWithDelay(tempYoutubePath, start, length < end ? length : end, 5000);
+                            await interaction.editReply({content: finalMessage, files: [{ attachment: outputVideoPath, name: `${finalFileName}.mp4`}]});
+                            fs.unlinkSync(outputVideoPath);
+                            fs.unlinkSync(tempYoutubePath);
+                            cooldownUser(author, 60);
+                            await client.usage.set(`${interaction.guild.id}.${interaction.user.id}.successful`, usedSuccessful ? parseInt(usedSuccessful) + 1 : 1);
+                        } catch (error) {
+                            console.error('Error generating the video:', error);
+                            interaction.followUp('An error occurred while generating the video. (Make sure the Video is not Age Restricted)');
                             cooldownUser(author, 10);
-                            return;
-                        } else {
-                            if (startTime && endTime) {
-                                const start = giveSecondsFromTime(startTime);
-                                const end = giveSecondsFromTime(endTime);
-                                if (start > length || end > length) {
-                                    interaction.reply({content: `${emojiError} - ** Please ensure your __START__ and/or __END__ times are shorter than the video's duration **`, ephemeral: true});
-                                    cooldownUser(author, 10);
-                                    return;
-                                } else if (start >= end) {
-                                    interaction.reply({content: `${emojiError} - ** Please ensure your __START__ time is shorter than __END__ time **`, ephemeral: true});
-                                    cooldownUser(author, 10);
-                                    return;
-                                } else if (start + danceEnd < end) {
-                                    interaction.reply({content: `${emojiError} - ** The time between __START__ and __END__ is over \`${danceEnd}\` seconds **`, ephemeral: true});
-                                    cooldownUser(author, 10);
-                                    return;
-                                } else if (start === end) {
-                                    interaction.reply({content: `${emojiError} - ** The time between __START__ and __END__ has to be at least \`1\` second **`, ephemeral: true});
-                                    cooldownUser(author, 10);
-                                    return;
-                                } else if (start === 0 && end) {
-                                    danceStart = 0;
-                                    danceEnd = end;
-                                } else if (start && end) {
-                                    danceStart = start;
-                                    danceEnd = end;
-                                } else {
-                                    interaction.reply({content: `${emojiError} - ** Please insert a correct __START__ and/or __END__ time (use \`/hlep boydancer\` for more information) **`, ephemeral: true});
-                                    cooldownUser(author, 10);
-                                    return;
-                                }
-                            } else if (!startTime && endTime) {
-                                const end = giveSecondsFromTime(endTime);
-                                if (end > length) {
-                                    interaction.reply({content: `${emojiError} - ** Please ensure your __END__ time is shorter than the video **`, ephemeral: true});
-                                    cooldownUser(author, 10);
-                                    return;
-                                } else if (end === 0) {
-                                    interaction.reply({content: `The __END__ time can not be \`0\` seconds`, ephemeral: true});
-                                    cooldownUser(author, 10);
-                                    return;
-                                } else if (end <= danceEnd) {
-                                    danceEnd = end;
-                                } else if (end > danceEnd) {
-                                    danceStart = end - danceEnd;
-                                    danceEnd = end;
-                                } else {
-                                    interaction.reply({content: `${emojiError} - ** Please insert a correct __END__ time **`, ephemeral: true});
-                                    cooldownUser(author, 10);
-                                    return;
-                                }
-                            } else if (startTime && !endTime) {
-                                const start = giveSecondsFromTime(startTime);
-                                if (start > length) {
-                                    interaction.reply({content: `${emojiError} - ** Please make sure your __START__ time is smaller than the video **`, ephemeral: true});
-                                    cooldownUser(author, 10);
-                                    return;
-                                } else if (start === 0) {
-                            		danceStart = start;
-                        		} else if (start + danceEnd > length) {
-                                    danceStart = start;
-                                    danceEnd = length;
-                                } else if (start) {
-                                    danceStart = start;
-                                    danceEnd = start + danceEnd;
-                                } else {
-                                    interaction.reply({content: `${emojiError} - ** Please insert a correct __START__ time **`, ephemeral: true});
-                                    cooldownUser(author, 10);
-                                    return;
-                                }
-                            }
-                            interaction.reply({content: generateMessage});
-                            await downloadSoundCloud(audioUrl);
-                            cooldownUser(author, 2);
-                            try {
-                                await applyAudioWithDelay(tempYoutubePath, danceStart, length < danceEnd ? length : danceEnd, 5000);
-                                await interaction.editReply({content: `${interaction.user}${beatsPerMin > 225 ? '\nEPILEPSY WARNING\n' : '\n'}Here is your boydancer:`, files: [{ attachment: outputVideoPath, name: `${finalFileName}.mp4`}]});
-                                fs.unlinkSync(outputVideoPath);
-                                fs.unlinkSync(tempYoutubePath);
-                                cooldownUser(author, 60);
-                            } catch (error) {
-                                console.error('Error generating the video:', error);
-                                interaction.followUp('An error occurred while generating the video.');
-                                cooldownUser(author, 10);
-                                fs.unlinkSync(tempYoutubePath);
-                            }
+                            fs.unlinkSync(tempYoutubePath);
+                            beatsPerMin ? fs.unlinkSync(tempVideoPath) : void(0);
                         }
+                    }
                 } else {
                     interaction.reply({content: `${emojiError} - ** The __SoundCloud Link__ you provided Does Not Exist. __Shortened Links__ also don't work **`, ephemeral: true});
                     cooldownUser(author, 10);
@@ -348,104 +227,30 @@ module.exports = {
                 }
             } else if (correctFile.some(extension => link.endsWith(extension))) {
                 const length = await getVideoDuration(audioUrl);
-                if (length) {
-                    if (startTime && endTime) {
-                        const start = giveSecondsFromTime(startTime);
-                        const end = giveSecondsFromTime(endTime);
-                        if (start > length || end > length) {
-                            interaction.reply({content: `${emojiError} - ** Please ensure your __START__ and/or __END__ times are shorter than the video's duration **`, ephemeral: true});
-                            cooldownUser(author, 10);
-                            return;
-                        } else if (start >= end) {
-                            interaction.reply({content: `${emojiError} - ** Please ensure your __START__ time is shorter than __END__ time **`, ephemeral: true});
-                            cooldownUser(author, 10);
-                            return;
-                        } else if (start + danceEnd < end) {
-                            interaction.reply({content: `${emojiError} - ** The time between __START__ and __END__ is over \`${danceEnd}\` seconds **`, ephemeral: true});
-                            cooldownUser(author, 10);
-                            return;
-                        } else if (start === end) {
-                            interaction.reply({content: `${emojiError} - ** The time between __START__ and __END__ has to be at least \`1\` second **`, ephemeral: true});
-                            cooldownUser(author, 10);
-                            return;
-                        } else if (start === 0 && end) {
-                            danceStart = 0;
-                            danceEnd = end;
-                        } else if (start && end) {
-                            danceStart = start;
-                            danceEnd = end;
-                        } else {
-                            interaction.reply({content: `${emojiError} - ** Please insert a correct __START__ and/or __END__ time (use \`/hlep boydancer\` for more information) **`, ephemeral: true});
-                            cooldownUser(author, 10);
-                            return;
-                        }
-                    } else if (!startTime && endTime) {
-                        const end = giveSecondsFromTime(endTime);
-                        if (end > length) {
-                            interaction.reply({content: `${emojiError} - ** Please ensure your __END__ time is shorter than the video **`, ephemeral: true});
-                            cooldownUser(author, 10);
-                            return;
-                        } else if (end === 0) {
-                            interaction.reply({content: `The __END__ time can not be \`0\` seconds`, ephemeral: true});
-                            cooldownUser(author, 10);
-                            return;
-                        } else if (end <= danceEnd) {
-                            danceEnd = end;
-                        } else if (end > danceEnd) {
-                            danceStart = end - danceEnd;
-                            danceEnd = end;
-                        } else {
-                            interaction.reply({content: `${emojiError} - ** Please insert a correct __END__ time **`, ephemeral: true});
-                            cooldownUser(author, 10);
-                            return;
-                        }
-                    } else if (startTime && !endTime) {
-                        const start = giveSecondsFromTime(startTime);
-                        if (start > length) {
-                            interaction.reply({content: `${emojiError} - ** Please make sure your __START__ time is smaller than the video **`, ephemeral: true});
-                            cooldownUser(author, 10);
-                            return;
-                        } else if (start === 0) {
-                            danceStart = start;
-                        } else if (start + danceEnd > length) {
-                            danceStart = start;
-                            danceEnd = length;
-                        } else if (start) {
-                            danceStart = start;
-                            danceEnd = start + danceEnd;
-                        } else {
-                            interaction.reply({content: `${emojiError} - ** Please insert a correct __START__ time **`, ephemeral: true});
-                            cooldownUser(author, 10);
-                            return;
-                        }
-                    }
-                    interaction.reply({content: generateMessage});
-                    cooldownUser(author, 1);
-                    try {
-                        await applyAudioWithDelay(audioUrl, danceStart, length < danceEnd ? length : danceEnd, 5000);
-                        await interaction.editReply({content: `${interaction.user}${viber == 1 ? beatsPerMin > 225 ? '\nEPILEPSY WARNING\n' : '\n' : '\n'}Here is your boydancer:`, files: [{ attachment: outputVideoPath, name: `${finalFileName}.mp4`}]});
-                        fs.unlinkSync(outputVideoPath);
-                        cooldownUser(author, 60);
-                        await client.usage.set(`${interaction.user.id}.successful`, usedSuccessful ? parseInt(usedSuccessful) + 1 : 1);
-                    } catch (error) {
-                        console.error('Error generating the video:', error);
-                        interaction.followUp('An error occurred while generating the video.');
-                        cooldownUser(author, 10);
-                    }
-                } else {
-                    interaction.reply('An error occurred while getting file data.');
-                    interaction.followUp({content: 'if you did everything correctly and think it\'s a bug, make a report `/report bug`', ephemeral: true});
+                await interaction.reply({content: generationString});
+                const [start, end] = await timeStamps(startTime, endTime, length);
+                cooldownUser(author, 5);
+                try {
+                    await applyAudioWithDelay(audioUrl, start, length < end ? length : end, whiteListed.includes(interaction.user.id) ? 100 : 5000);
+                    await interaction.editReply({content: finalMessage, files: [{ attachment: outputVideoPath, name: `${finalFileName}.mp4`}]});
+                    fs.unlinkSync(outputVideoPath);
+                    cooldownUser(author, 60);
+                    await client.usage.set(`${interaction.guild.id}.${interaction.user.id}.successful`, usedSuccessful ? parseInt(usedSuccessful) + 1 : 1);
+                } catch (error) {
+                    console.error('Error generating the video:', error);
+                    interaction.followUp('An error occurred while generating the video. (Make sure the Video is not Age Restricted)');
                     cooldownUser(author, 10);
+                    beatsPerMin ? fs.unlinkSync(tempVideoPath) : void(0);
                 }
             } else {
                 interaction.reply({content: `${emojiError} - ** Please provide a supported link (supported are __Youtube__, __SoundCloud__ and __Audio/Video__ links (use \`/help boydancer\` for more information) **`, ephemeral: true});
                 cooldownUser(author, 10);
                 return;
             }
-        } else if (audioFile && !audioUrl) {
+        } else if (!audioUrl && audioFile && !searchTitle) {
             const file = audioFile.url;
             if (audioFile.size >= 50000000) {
-                interaction.reply({content: `${emojiError} - The Video you provided is over __50 MB__`, ephemeral: true});
+                interaction.reply({content: `${emojiError} - The File you provided is over __50 MB__`, ephemeral: true});
                 cooldownUser(author, 10);
                 return;
             } else if (!correctFile.some(extension => file.endsWith(extension))) {
@@ -453,101 +258,65 @@ module.exports = {
                 cooldownUser(author, 10);
                 return;
             } else {
+                await interaction.reply({content: generationString});
                 const length = await getVideoDuration(file);
-                if (length) {
-                    if (startTime && endTime) {
-                        const start = giveSecondsFromTime(startTime);
-                        const end = giveSecondsFromTime(endTime);
-                        if (start > length || end > length) {
-                            interaction.reply({content: `${emojiError} - ** Please ensure your __START__ and/or __END__ times are shorter than the video's duration **`, ephemeral: true});
-                            cooldownUser(author, 10);
-                            return;
-                        } else if (start >= end) {
-                            interaction.reply({content: `${emojiError} - ** Please ensure your __START__ time is shorter than __END__ time **`, ephemeral: true});
-                            cooldownUser(author, 10);
-                            return;
-                        } else if (start + danceEnd < end) {
-                            interaction.reply({content: `${emojiError} - ** The time between __START__ and __END__ is over \`${danceEnd}\` seconds **`, ephemeral: true});
-                            cooldownUser(author, 10);
-                            return;
-                        } else if (start === end) {
-                            interaction.reply({content: `${emojiError} - ** The time between __START__ and __END__ has to be at least \`1\` second **`, ephemeral: true});
-                            cooldownUser(author, 10);
-                            return;
-                        } else if (start === 0 && end) {
-                            danceStart = 0;
-                            danceEnd = end;
-                        } else if (start && end) {
-                            danceStart = start;
-                            danceEnd = end;
-                        } else {
-                            interaction.reply({content: `${emojiError} - ** Please insert a correct __START__ and/or __END__ time (use \`/hlep boydancer\` for more information) **`, ephemeral: true});
-                            cooldownUser(author, 10);
-                            return;
-                        }
-                    } else if (!startTime && endTime) {
-                        const end = giveSecondsFromTime(endTime);
-                        if (end > length) {
-                            interaction.reply({content: `${emojiError} - ** Please ensure your __END__ time is shorter than the video **`, ephemeral: true});
-                            cooldownUser(author, 10);
-                            return;
-                        } else if (end === 0) {
-                            interaction.reply({content: `The __END__ time can not be \`0\` seconds`, ephemeral: true});
-                            cooldownUser(author, 10);
-                            return;
-                        } else if (end <= danceEnd) {
-                            danceEnd = end;
-                        } else if (end > danceEnd) {
-                            danceStart = end - danceEnd;
-                            danceEnd = end;
-                        } else {
-                            interaction.reply({content: `${emojiError} - ** Please insert a correct __END__ time **`, ephemeral: true});
-                            cooldownUser(author, 10);
-                            return;
-                        }
-                    } else if (startTime && !endTime) {
-                        const start = giveSecondsFromTime(startTime);
-                        if (start > length) {
-                            interaction.reply({content: `${emojiError} - ** Please make sure your __START__ time is smaller than the video **`, ephemeral: true});
-                            cooldownUser(author, 10);
-                            return;
-                        } else if (start === 0) {
-                            danceStart = start;
-                        } else if (start + danceEnd > length) {
-                            danceStart = start;
-                            danceEnd = length;
-                        } else if (start) {
-                            danceStart = start;
-                            danceEnd = start + danceEnd;
-                        } else {
-                            interaction.reply({content: `${emojiError} - ** Please insert a correct __START__ time **`, ephemeral: true});
-                            cooldownUser(author, 10);
-                            return;
-                        }
-                    }
-                    interaction.reply({content: generateMessage});
-                    cooldownUser(author, 1);
-                    try {
-                        await applyAudioWithDelay(file, danceStart, length < danceEnd ? length : danceEnd, 5000);
-                        await interaction.editReply({content: `${interaction.user}${beatsPerMin > 225 ? '\nEPILEPSY WARNING\n' : '\n'}Here is your boydancer:`, files: [{ attachment: outputVideoPath, name: `${finalFileName}.mp4`}]});
-                        
-                        fs.unlinkSync(outputVideoPath);
-                        cooldownUser(author, 60);
-                        await client.usage.set(`${interaction.user.id}.successful`, usedSuccessful ? parseInt(usedSuccessful) + 1 : 1);
-                    } catch (error) {
-                        console.error('Error generating the video:', error);
-                        interaction.followUp('An error occurred while generating the video.');
-                        cooldownUser(author, 10);
-                    }
-                } else {
-                    interaction.reply('An error occurred while getting file data.');
-                    interaction.followUp({content: 'if you did everything correctly and think it\'s a bug, make a report `/report bug`', ephemeral: true});
+                const [start, end] = await timeStamps(startTime, endTime, length);
+                cooldownUser(author, 5);
+                try {
+                    await applyAudioWithDelay(file, start, length < end ? length : end, whiteListed.includes(interaction.user.id) ? 100 : 5000);
+                    await interaction.editReply({content: finalMessage, files: [{ attachment: outputVideoPath, name: `${finalFileName}.mp4`}]});
+                    fs.unlinkSync(outputVideoPath);
+                    cooldownUser(author, 60);
+                    await client.usage.set(`${interaction.guild.id}.${interaction.user.id}.successful`, usedSuccessful ? parseInt(usedSuccessful) + 1 : 1);
+                } catch (error) {
+                    console.error('Error generating the video:', error);
+                    interaction.followUp('An error occurred while generating the video. (Make sure the Video is not Age Restricted)');
                     cooldownUser(author, 10);
+                    beatsPerMin ? fs.unlinkSync(tempVideoPath) : void(0);
                 }
             }
+        } else if (!audioUrl && !audioFile && searchTitle) {
+            const videoUrl = await findVideoUrl(searchTitle)
+            if (await checkLiveStatus(videoUrl)) {
+                interaction.reply({content: `:blush: ** **- ** Please ensure the __Youtube Video__ is not a __Livestream__ **`, ephemeral: true}); //kys
+                cooldownUser(author, 10);
+                return;
+            } else {
+                const length = parseInt(await checkYoutubeVideoLength(videoUrl));
+                if (length > maxInput) {
+                    interaction.reply({content: `${emojiError} - ** Please ensure that the __YouTube Video__ is __10 minutes (600 seconds)__ or shorter **`, ephemeral: true});
+                    cooldownUser(author, 10);
+                    return;
+                } else {
+                    await interaction.reply({content: generationString});
+                    const [start, end] = await timeStamps (startTime, endTime, length);
+                    await downloadYoutubeVideo(videoUrl);
+                    cooldownUser(author, 5);
+                    try {
+                        await applyAudioWithDelay(tempYoutubePath, start, length < end ? length : end, 5000);
+                        await interaction.editReply({content: finalMessage, files: [{ attachment: outputVideoPath, name: `${finalFileName}.mp4`}]});
+                        fs.unlinkSync(outputVideoPath);
+                        fs.unlinkSync(tempYoutubePath);
+                        cooldownUser(author, 60);
+                        await client.usage.set(`${interaction.guild.id}.${interaction.user.id}.successful`, usedSuccessful ? parseInt(usedSuccessful) + 1 : 1);
+                    } catch (error) {
+                        console.error('Error generating the video:', error);
+                        interaction.followUp('An error occurred while generating the video. (Make sure the Video is not Age Restricted)');
+                        cooldownUser(author, 10);
+                        fs.unlinkSync(tempYoutubePath);
+                        beatsPerMin ? fs.unlinkSync(tempVideoPath) : void(0);
+                    }
+                }
+            }
+        } else {
+            let replies = [`Ha Ha very funny. "lem e putt .gsgl gggmgm as jok" :nerd::nerd::nerd:`, `No...`, `Kindly deactive yourself :blush:`, `Mods, crush his skull`, `I'm gonna fuck your mother`, `hey buddy. we're going to kill you and leave you laid out in a dumpster to rot`, `https://cdn.discordapp.com/attachments/873603423998705718/1145258850132443206/8apAlKE.gif`, `https://cdn.discordapp.com/attachments/873603423998705718/1145258963676430346/cqtykgb.gif`, `https://cdn.discordapp.com/attachments/873603423998705718/1145985376515788800/pjSHLOr.png`];
+            let randomMessage = Math.floor(Math.random() * replies.length);
+            interaction.reply(replies[randomMessage]);
+            cooldownUser(author, 60);
+            return;
         }
 
-        //functions
+        // functions
 
         function cooldownUser(user, time) {
             cooldowns.set(user, Date.now() + time * 1000); //time in seconds
@@ -566,13 +335,33 @@ module.exports = {
             }
         }
 
-        //audio applying function
+        //link functions
 
-        async function changeVideoBPM(inputVideoPath, tempVid, BPM) {
+        async function getVideoDuration(videoUrl) {
+            return new Promise((resolve, reject) => {
+                ffmpeg.ffprobe(videoUrl, (err, metadata) => {
+                    if (err) {
+                        reject(err);
+                        return;
+                    }
+                    if (metadata && metadata.format && metadata.format.duration) {
+                        const totalDurationInSeconds = parseFloat(metadata.format.duration);
+                        resolve(totalDurationInSeconds.toFixed(1));
+                    } else {
+                        resolve(null);
+                    }
+                });
+            });
+        }
+
+        //audio applying functions
+
+        async function changeVideoBPM(inputVideoPath, tempVid, BPM, duration) {
             return new Promise((resolve, reject) => {
                 const ffmpegProcess = ffmpeg()
                     .input(inputVideoPath)
                     .videoFilter(`setpts=${150 / BPM}*PTS`)
+                    .outputOptions([`-t ${duration}`, '-y'])
                     .output(tempVid)
                     .on('error', (err) => {
                         reject(err);
@@ -590,10 +379,9 @@ module.exports = {
             const calculatedDuration = (end - start) / (normalizedAudioSpeed / 100);
             const duration = calculatedDuration <= danceEnd ? calculatedDuration : danceEnd;
             return new Promise(async (resolve, reject) => {
-                const tempVideoPath = `./files/otherTemp/${randomFileName}.mp4`;
                 if (beatsPerMin) {
-                    const bpm = beatsPerMin > 500 ? 500 :  beatsPerMin < 10 ? 10 : beatsPerMin;
-                    await changeVideoBPM(backgroundViber, tempVideoPath, bpm);
+                    const bpm = beatsPerMin ? beatsPerMin > 500 ? 500 : beatsPerMin < 10 ? 10 : beatsPerMin : 10000;
+                    await changeVideoBPM(backgroundViber, tempVideoPath, bpm, duration);
                 }
                 const ffmpegProcess = ffmpeg()
                 .input(beatsPerMin ? tempVideoPath : backgroundViber)
@@ -616,17 +404,35 @@ module.exports = {
                     reject(err);
                 })
                 .on('end', () => {
-                    fs.unlinkSync(tempVideoPath);
+                    beatsPerMin ? fs.unlinkSync(tempVideoPath) : void(0);
                     resolve(outputVideoPath);
                 });
-        
                 ffmpegProcess.run();
             });
-          }
+        }
 
         async function applyAudioWithDelay(file, start, end, delay) {
             await new Promise(resolve => setTimeout(resolve, delay));
             await applyAudioToVideoFILE(file, start, end);
+        }
+
+        //search functions
+
+        async function findVideoUrl(title) {
+            return new Promise((resolve, reject) => {
+                yts(title, (err, r) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        const firstResult = r.videos[0];
+                        if (!firstResult) {
+                            reject(new Error('Video not found.'));
+                        } else {
+                            resolve(firstResult.url);
+                        }
+                    }
+                });
+            });
         }
 
         //youtube functions
@@ -646,7 +452,7 @@ module.exports = {
             return false;
         }
 
-        function isWorkingLink(videoUrl) {
+        function isWorkingLink_Youtube(videoUrl) {
             return ytdl.validateURL(videoUrl);
         }
 
@@ -682,8 +488,8 @@ module.exports = {
             console.error('Error:', err);
             });
         }
-        
-        // SoundCloud Functions
+
+        //soundcloud functions
 
         function isSoundCloudLink(url) {
             const patterns = [
@@ -719,25 +525,85 @@ module.exports = {
             scdl.downloadFormat(audioUrl, "audio/mpeg").then(stream => stream.pipe(fileStream)).catch(err => console.error('Error:', err));
         }
 
-        //links function
+        //the annoying thing
 
-        async function getVideoDuration(videoUrl) {
-            return new Promise((resolve, reject) => {
-                ffmpeg.ffprobe(videoUrl, (err, metadata) => {
-                    if (err) {
-                        reject(err);
-                        return;
-                    }
-                    if (metadata && metadata.format && metadata.format.duration) {
-                        const totalDurationInSeconds = parseFloat(metadata.format.duration);
-                        resolve(totalDurationInSeconds.toFixed(1));
-                    } else {
-                        resolve(null);
-                    }
-                });
-            });
+        async function timeStamps(startStamp, endStamp, length) {
+            if (startTime && endTime) {
+                const start = giveSecondsFromTime(startStamp);
+                const end = giveSecondsFromTime(endStamp);
+                if (start > length || end > length) {
+                    interaction.reply({content: `${emojiError} - ** Please ensure your __START__ and/or __END__ times are shorter than the video's duration **`, ephemeral: true});
+                    cooldownUser(author, 10);
+                    return;
+                } else if (start >= end) {
+                    interaction.reply({content: `${emojiError} - ** Please ensure your __START__ time is shorter than __END__ time **`, ephemeral: true});
+                    cooldownUser(author, 10);
+                    return;
+                } else if (start + danceEnd < end) {
+                    interaction.reply({content: `${emojiError} - ** The time between __START__ and __END__ is over \`${danceEnd}\` seconds **`, ephemeral: true});
+                    cooldownUser(author, 10);
+                    return;
+                } else if (start === end) {
+                    interaction.reply({content: `${emojiError} - ** The time between __START__ and __END__ has to be at least \`1\` second **`, ephemeral: true});
+                    cooldownUser(author, 10);
+                    return;
+                } else if (start === 0 && end) {
+                    danceStart = 0;
+                    danceEnd = end;
+                } else if (start && end) {
+                    danceStart = start;
+                    danceEnd = end;
+                } else {
+                    interaction.reply({content: `${emojiError} - ** Please insert a correct __START__ and/or __END__ time (use \`/hlep boydancer\` for more information) **`, ephemeral: true});
+                    cooldownUser(author, 10);
+                    return;
+                }
+            } else if (!startTime && endTime) {
+                const end = giveSecondsFromTime(endStamp);
+                if (end > length) {
+                    interaction.reply({content: `${emojiError} - ** Please ensure your __END__ time is shorter than the video **`, ephemeral: true});
+                    cooldownUser(author, 10);
+                    return;
+                } else if (end === 0) {
+                    interaction.reply({content: `The __END__ time can not be \`0\` seconds`, ephemeral: true});
+                    cooldownUser(author, 10);
+                    return;
+                } else if (end <= danceEnd) {
+                    danceEnd = end;
+                } else if (end > danceEnd) {
+                    danceStart = end - danceEnd;
+                    danceEnd = end;
+                } else {
+                    interaction.reply({content: `${emojiError} - ** Please insert a correct __END__ time **`, ephemeral: true});
+                    cooldownUser(author, 10);
+                    return;
+                }
+            } else if (startTime && !endTime) {
+                const start = giveSecondsFromTime(startStamp);
+                if (start > length) {
+                    interaction.reply({content: `${emojiError} - ** Please make sure your __START__ time is smaller than the video **`, ephemeral: true});
+                    cooldownUser(author, 10);
+                    return;
+                } else if (start === 0) {
+                    danceStart = start;
+                } else if (start + danceEnd > length) {
+                    danceStart = start;
+                    danceEnd = length;
+                } else if (start) {
+                    danceStart = start;
+                    danceEnd = start + danceEnd;
+                } else {
+                    interaction.reply({content: `${emojiError} - ** Please insert a correct __START__ time **`, ephemeral: true});
+                    cooldownUser(author, 10);
+                    return;
+                }
+            } else {
+                danceStart = danceStart;
+                danceEnd = length < danceEnd ? length : danceEnd;
+            }
+            return [danceStart, danceEnd];
         }
-   },
+    }
 };
 /*
 ⣿⣿⡟⡹⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿

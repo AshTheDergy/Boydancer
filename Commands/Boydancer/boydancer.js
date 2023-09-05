@@ -77,16 +77,16 @@ module.exports = {
 
         //command usage count tracking
 
-        let used = await client.usage.get(`${interaction.guild.id}.${interaction.user.id}`);
-        if (!used) {
+        let used = await client.usage.get(`${interaction.guild.id}`);
+        if (!used[interaction.user.id]) {
             await client.usage.set(`${interaction.guild.id}.${interaction.user.id}.username`, interaction.user.username);
             await client.usage.set(`${interaction.guild.id}.${interaction.user.id}.userId`, interaction.user.id);
-        } else if (used.username !== interaction.user.username) {
+        } else if (used[interaction.user.id].username !== interaction.user.username) {
             client.usage.set(`${interaction.guild.id}.${interaction.user.id}.username`, interaction.user.username);
         }
-
-        const usedSuccessful = used?.sccessful;
-        const usedAll = used?.all;
+ 
+        const usedSuccessful = used[interaction.user.id]?.successful;
+        const usedAll = used[interaction.user.id]?.all;
         await usedAll ? await client.usage.inc(`${interaction.guild.id}.${interaction.user.id}.all`) : await client.usage.set(`${interaction.guild.id}.${interaction.user.id}.all`, 1);
 
         //premium users

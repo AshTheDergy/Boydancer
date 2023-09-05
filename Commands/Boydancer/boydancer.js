@@ -91,7 +91,7 @@ module.exports = {
 
         //premium users
 
-        let whiteListed = ['817843037593403402', '358936084278673415'];
+        let whiteListed = [];
         const data = await client.premium.values;
         for (const key in data) {
     		if (data.hasOwnProperty(key)) {

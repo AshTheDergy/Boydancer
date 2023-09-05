@@ -1,6 +1,6 @@
 {
   "name": "boydancer",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Vibin bot",
   "main": "index.js",
   "scripts": {
@@ -11,16 +11,18 @@
   "author": "Ash",
   "dependencies": {
     "@joshdb/core": "^1.2.7",
-    "@joshdb/json": "^1.0.5",
-    "discord.js": "^14.13.0",
-    "dotenv": "^16.3.1",
-    "execa": "^8.0.1",
-    "fluent-ffmpeg": "^2.1.2",
-    "fs": "^0.0.1-security",
-    "humanize-duration": "^3.29.0",
-    "node-fetch": "^2.6.9",
-    "path": "^0.12.7",
-    "soundcloud-downloader": "^1.0.0",
-    "ytdl-core": "^4.11.5"
+        "@joshdb/json": "^1.0.5",
+        "discord.js": "^14.11.0",
+        "dotenv": "^16.3.1",
+        "execa": "^8.0.1",
+        "fluent-ffmpeg": "^2.1.2",
+        "fs": "^0.0.1-security",
+        "humanize-duration": "^3.29.0",
+        "node-fetch": "^2.6.9",
+        "path": "^0.12.7",
+        "play-dl": "^1.9.6",
+        "soundcloud-downloader": "^1.0.0",
+        "yt-search": "^2.10.4",
+        "ytdl-core": "^4.11.5"
   }
 }

@@ -11,7 +11,7 @@ const yts = require('yt-search');
 
 module.exports = {
     name: "boydancer",
-    description: `Apply audio to boykisser dancing video max 60 seconds!! (in beta)`,
+    description: `Apply audio to boykisser dancing video max 60 seconds!! (YOUTUBE DOESN'T WORK ATM)`,
     userPermissions: ['SEND_MESSAGES'],
     botPermissions: ["EMBED_LINKS"],
     type: "CHAT_INPUT",
@@ -39,7 +39,7 @@ module.exports = {
         },
         {
             name: "link",
-            description: "A video/song link (currently youtube, soundcloud and file links only)",
+            description: "A video/song link (~~youtube~~, soundcloud and file links only)",
             type: 3,
         },
         {
@@ -79,8 +79,8 @@ module.exports = {
 
         let used = await client.usage.get(`${interaction.guildId}.${interaction.user.id}`);
         if (!used) {
-            await client.usage.set(`${interaction.user.id}.username`, interaction.user.username);
-            await client.usage.set(`${interaction.user.id}.userId`, interaction.user.id);
+            await client.usage.set(`${interaction.guildId}.${interaction.user.id}.username`, interaction.user.username);
+            await client.usage.set(`${interaction.guildId}.${interaction.user.id}.userId`, interaction.user.id);
         } else if (used.username !== interaction.user.username) {
             client.usage.set(`${interaction.guildId}.${interaction.user.id}.username`, interaction.user.username);
         }
@@ -157,14 +157,17 @@ module.exports = {
                 cooldownUser(author, 10);
                 return;
             } else if (isYoutubeLink(audioUrl)) {
-                if (isWorkingLink_Youtube(audioUrl)) {
-                    if (await checkLiveStatus(audioUrl)) {
+                if (interaction.user.id !== "817843037593403402") {
+                    interaction.reply("broken :<")
+                    return;
+                } else if (isWorkingLink_Youtube(audioUrl)) {
+
+                        const length = parseInt(await checkYoutubeVideoLength(audioUrl));
+                        if (length == "0") {
                         interaction.reply({content: `:blush: ** **- ** Please ensure the __Youtube Video__ is not a __Livestream__ **`, ephemeral: true}); //kys
                         cooldownUser(author, 10);
                         return;
-                    } else {
-                        const length = parseInt(await checkYoutubeVideoLength(audioUrl));
-                        if (length > maxInput) {
+                    	} else if (length > maxInput) {
                             interaction.reply({content: `${emojiError} - ** Please ensure that the __YouTube Video__ is __10 minutes (600 seconds)__ or shorter **`, ephemeral: true});
                             cooldownUser(author, 10);
                             return;
@@ -259,7 +262,6 @@ module.exports = {
                                     fs.unlinkSync(tempVideoPath);
                                 }
                             }
-                        }
                     }
                 } else {
                     interaction.reply({content: `${emojiError} - ** The __Youtube Video__ you provided Does Not Exist **`, ephemeral: true});
@@ -370,7 +372,7 @@ module.exports = {
                     cooldownUser(author, 10);
                     return;
                 }
-            } else if (correctFile.some(extension => link.endsWith(extension))) {
+            } else if (correctFile.some(extension => audioUrl.endsWith(extension))) {
                 const length = await getVideoDuration(audioUrl);
                 if (startTime && endTime) {
                     const start = giveSecondsFromTime(startTime);
@@ -475,6 +477,7 @@ module.exports = {
                 cooldownUser(author, 10);
                 return;
             } else {
+                const length = await getVideoDuration(file);
                 if (startTime && endTime) {
                     const start = giveSecondsFromTime(startTime);
                     const end = giveSecondsFromTime(endTime);
@@ -547,7 +550,6 @@ module.exports = {
                 }
 
                 interaction.reply({content: generationString});
-                const length = await getVideoDuration(file);
                 cooldownUser(author, 5);
                 try {
                     await applyAudioWithDelay(file, danceStart, length < danceEnd ? length : danceEnd, whiteListed.includes(interaction.user.id) ? 100 : 5000);
@@ -651,7 +653,7 @@ module.exports = {
                     await downloadYoutubeVideo(videoUrl);
                     cooldownUser(author, 5);
                     try {
-                        await applyAudioWithDelay(tempYoutubePath, danceStart, length < danceEnd ? length : danceEnd, 5000);
+                        await applyAudioWithDelay(tempYoutubePath, danceStart, length < danceEnd ? length : danceEnd, 8000);
                         await interaction.editReply({content: finalMessage, files: [{ attachment: outputVideoPath, name: `${finalFileName}.mp4`}]});
                         fs.unlinkSync(outputVideoPath);
                         fs.unlinkSync(tempYoutubePath);

@@ -7,8 +7,9 @@ If you want to use the bot yourself, make sure to change the token in config fil
 to run the bot, first do `npm i` in your terminal and then run with `node .` :3
 
 
-## YTDL-CORE IS CURRENTLY BROKEN AND YOU NEED TO CHANGE `node_modules/ytdl-core/lib/sig.js` into the following code:
+### YTDL-CORE IS CURRENTLY BROKEN AND YOU NEED TO CHANGE `node_modules/ytdl-core/lib/sig.js` INTO THE FOLLOWING CODE:
 
+```js
 const querystring = require('querystring');
 const Cache = require('./cache');
 const utils = require('./utils');
@@ -181,3 +182,4 @@ exports.decipherFormats = async(formats, html5player, options) => {
   });
   return decipheredFormats;
 };
+```

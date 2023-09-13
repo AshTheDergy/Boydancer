@@ -91,7 +91,7 @@ module.exports = {
 
         //premium users
 
-        let whiteListed = ['817843037593403402', '358936084278673415'];
+        let whiteListed = [];
         const data = await client.premium.values;
         for (const key in data) {
     		if (data.hasOwnProperty(key)) {
@@ -157,11 +157,8 @@ module.exports = {
                 cooldownUser(author, 10);
                 return;
             } else if (isYoutubeLink(audioUrl)) {
-                if (interaction.user.id !== "817843037593403402") {
-                    interaction.reply("broken :<")
-                    return;
-                } else if (isWorkingLink_Youtube(audioUrl)) {
-
+                
+                if (isWorkingLink_Youtube(audioUrl)) {
                         const length = parseInt(await checkYoutubeVideoLength(audioUrl));
                         if (length == "0") {
                         interaction.reply({content: `:blush: ** **- ** Please ensure the __Youtube Video__ is not a __Livestream__ **`, ephemeral: true}); //kys

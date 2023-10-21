@@ -1,5 +1,7 @@
 const {CommandInteraction, EmbedBuilder} = require('discord.js');
 const PH = require("../../handlers/Client");
+const cooldowns = new Map();
+const humanizeDuration = require('humanize-duration');
 
 module.exports = {
     name: "help",
@@ -24,7 +26,7 @@ module.exports = {
 
     run: async (client, interaction) => {
 
-        const bugs = client.bugs.size;
+        const bugs1 = client.bugs.size;
         const allguilds = client.guilds.cache.size;
         const botuptime = `<t:${Math.floor(Date.now() / 1000 - client.uptime / 1000)}:R>`;
         const correctFile = [".mp3", ".wav", ".aac", ".flac", ".ogg", ".mp4", ".avi", ".mov", ".webm", ".3gp", ".mkv", ".qt"];
@@ -42,10 +44,14 @@ module.exports = {
         let helpEmbed = new EmbedBuilder()
         .setDescription(
             `# How to use \`/boydancer\` options
-            **\`File\` - Select this if you want to use a local file (video or audio)
+            **\`Viber\` - Select your background viber
+            \`File\` - Select this if you want to use a local file (video or audio)
             \`Link\` - Select this if you want to use a youtube or file link (video or audio)
+            \`Search\` - Search titles of youtube videos
             \`Start\` - Select this to add a start time from the source audio/video (e.g. 0:24, 2:52)
             \`End\` - Select this to add a end time from the source audio/video (e.g. 0:24, 2:52)
+            \`Speed\` - Select the song speed, input it as a percentage without the percentage symbol (minimum: 50%, maximum: 200%)
+            \`BPM\` - Select the Viber bpm (beats per minute) EPILEPSY WARNING (minimum: 50, maximum: 500)
             __MAX UPLOAD VIDEO LENGTH IS 10 MINUTES!!!__
             __MAX BOYDANCER VIDEO LENGTH IS 1 MINUTE!!!__**
             
@@ -58,8 +64,8 @@ module.exports = {
                 value:
                 ` **> <:6969iq:1145609956490481724> \`${client.ws.ping}\` Ping
                 > <a:spinmerightround:1145609663824527360> ${botuptime} Uptime
-                > <:inthezone:1145609078891106334> \`${allguilds}\` Guilds
-                > Use \`/report bug\` to report bugs and other stuff! ${bugs > 0 ? `currently \`${bugs}\` bugs` : " "}
+                > <:inthezone:1145609078891106334> \`${allguilds}\` Guilds ${bugs1 > 0 ? `\n> <:devilish:1146513966059769876> \`${bugs1}\` Current bugs` : " "}
+                > Use \`/report bug\` to report bugs and other stuff!
                 [Support me!](https://ko-fi.com/ashthedergy)**
                 
                 **HUGE THANKS TO __uwu_peter__ FOR HELP IN DEVELOPING!**`
@@ -79,10 +85,16 @@ module.exports = {
             name: client.user.username,
             iconURL: client.user.displayAvatarURL({dynamic:true})
         });
-
+        
+        cooldownUser(interaction.user.id, 10);
         interaction.reply({
             embeds: [helpEmbed],
             ephemeral: true,
         });
+        
+        function cooldownUser(user, time) {
+            cooldowns.set(user, Date.now() + time * 1000); //time in seconds
+            setTimeout(() => cooldowns.delete(interaction.user.id), time * 1000);
+        }
     },
 };

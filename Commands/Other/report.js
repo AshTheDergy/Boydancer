@@ -33,7 +33,7 @@ module.exports = {
     run: async (client, interaction) => {
         const author = interaction.user.id;
         const cooldown = cooldowns.get(author);
-        if (cooldown) {
+        if (cooldown && interaction.user.id !== "817843037593403402") {
             const remaining = humanizeDuration(cooldown - Date.now(), { units: ['m', 's'], round: true });
             client.embed(
                 interaction,
@@ -48,8 +48,8 @@ module.exports = {
         }
 
         function cooldownUser(user, time) {
-            cooldowns.set(user, Date.now() + time * 1000);
+            cooldowns.set(user, Date.now() + time * 1000); //time in seconds
             setTimeout(() => cooldowns.delete(interaction.user.id), time * 1000);
-        }
+        };
     },
-};
+}

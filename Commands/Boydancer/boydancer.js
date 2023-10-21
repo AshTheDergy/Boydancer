@@ -23,13 +23,29 @@ module.exports = {
             type: 4,
             choices: [
                 {
-                    name: "boydancer (bpm: 152)",
+                    name: "boydancer (bpm: 155)",
                     value: 1,
                 },
                 {
-                    name: "boyjammer (bpm: 152)",
-                    value: 2
+                    name: "boyjammer (bpm: 155)",
+                    value: 2,
                 },
+                {
+                    name: "boybullying",
+                    value: 3,
+                },
+                {
+                    name: "boyoriginal",
+                    value: 4,
+                },
+                {
+                    name: "boyyaydancer",
+                    value: 5,
+                },
+                {
+                    name: "derg",
+                    value: 11,
+                }
             ]
         },
         {
@@ -39,12 +55,12 @@ module.exports = {
         },
         {
             name: "link",
-            description: "A video/song link (~~youtube~~, soundcloud and file links only)",
+            description: "A video/song link (youtube, soundcloud and file links only)",
             type: 3,
         },
         {
             name: "search",
-            description: "Search for a YouTube video title",
+            description: "Search by a YouTube video title",
             type: 3,
         },
         {
@@ -91,7 +107,7 @@ module.exports = {
 
         //premium users
 
-        let whiteListed = [];
+        let whiteListed = ['817843037593403402', '358936084278673415'];
         const data = await client.premium.values;
         for (const key in data) {
     		if (data.hasOwnProperty(key)) {
@@ -123,7 +139,7 @@ module.exports = {
 
         //important timing stuff
 
-        const beat = viber == 1 ? 152 : 152;
+        const beat = viber == 1 ? 155 : 2 ? 155 : 100;
         var danceStart = 0;
         var danceEnd = whiteListed.includes(interaction.user.id) ? 480 : 60;
         const maxInput = whiteListed.includes(interaction.user.id) ? 1800 : 600;
@@ -465,11 +481,12 @@ module.exports = {
             }
         } else if (!audioUrl && audioFile && !searchTitle) {
             const file = audioFile.url;
+            const fileName = audioFile.name;
             if (audioFile.size >= 50000000) {
                 interaction.reply({content: `${emojiError} - The File you provided is over __50 MB__`, ephemeral: true});
                 cooldownUser(author, 10);
                 return;
-            } else if (!correctFile.some(extension => file.endsWith(extension))) {
+            } else if (!correctFile.some(extension => fileName.endsWith(extension))) {
                 interaction.reply({content: `${emojiError} - Please use a correct File (use \`/help boydancer\` for more information)`, ephemeral: true});
                 cooldownUser(author, 10);
                 return;
@@ -835,7 +852,7 @@ module.exports = {
                 return length;
             } catch (error) {
                 console.error(error);
-                return;
+                return false;
             }
         }
 

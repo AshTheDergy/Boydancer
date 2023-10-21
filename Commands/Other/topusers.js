@@ -16,12 +16,14 @@ module.exports = {
     */
     run: async (client, interaction) => {
 
-        let allUsers = [];
-        const values = await client.usage.values;
-        const amount = await client.usage.size;
+		let guildUsers = await client.usage.get(`${interaction.guildId}`)
 
+        let amount = Object.keys(guildUsers).length
+        let value = Object.values(guildUsers);
+
+		let allUsers = [];
         for (let i = 0; i < amount; i++) {
-            let user = values[i];
+            let user = value[i];
             allUsers.push({
             id: user.userId,
             name: user.username,
@@ -47,7 +49,7 @@ module.exports = {
         .setColor('#' + Math.floor(Math.random() * 0xFFFFFF).toString(16).padEnd(6, '0'))
         .setDescription(description);
        if (messageAuthor && !topUsers.some(user => user.id === interaction.user.id)) {
-        lb.setDescription(description + '\n' + `**\` ${allUsers.findIndex(user => user.id === interaction.user.id) + 1} \` ${interaction.user.username} Used: ${messageAuthor.used}, Successes: ${messageAuthor.successes}**`);
+        lb.setDescription(description + '\n' + `**\` ${allUsers.findIndex(user => user.id === interaction.user.id) + 1}. \` ${interaction.user.username} Used: ${messageAuthor.used}, Successes: ${messageAuthor.successes}**`);
         }
         interaction.followUp({
             embeds: [lb],

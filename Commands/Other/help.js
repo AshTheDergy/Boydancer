@@ -1,5 +1,7 @@
 const {CommandInteraction, EmbedBuilder} = require('discord.js');
 const PH = require("../../handlers/Client");
+const cooldowns = new Map();
+const humanizeDuration = require('humanize-duration');
 
 module.exports = {
     name: "help",
@@ -24,35 +26,75 @@ module.exports = {
 
     run: async (client, interaction) => {
 
-        const bugs = await client.bugs.size;
+        const bugs1 = client.bugs.size;
         const allguilds = client.guilds.cache.size;
         const botuptime = `<t:${Math.floor(Date.now() / 1000 - client.uptime / 1000)}:R>`;
         const correctFile = [".mp3", ".wav", ".aac", ".flac", ".ogg", ".mp4", ".avi", ".mov", ".webm", ".3gp", ".mkv", ".qt"];
+        
+        let supporters = [];
+        const data = await client.premium.values;
+        for (const key in data) {
+    		if (data.hasOwnProperty(key)) {
+        		const user = data[key];
+        		const userString = `${user.name} (<@${user.userId}>)`;
+        		supporters.push(userString);
+    		}
+		}
 
         let helpEmbed = new EmbedBuilder()
         .setDescription(
-            `** How to use \`/boydancer\` options\n\`File\` - Select this if you want to use a local file (video or audio)\n\`Link\` - Select this if you want to use a youtube or file link (video or audio)\n||~~Selecting both won't work and will make the bot confused~~||\n\`Start\` - Select this to add a start time from the source audio/video (e.g. 0:24, 2:52)\n\`End\` - Select this to add a end time from the source audio/video (e.g. 0:24, 2:52)\n__!!!MAX UPLOAD VIDEO LENGTH IS 10 MINUTES AND MAX BOYDANCER VIDEO LENGTH IS 1 MINUTE!!!__\n\nSupported Files:\n**\`${correctFile.join('\`, \`')}\``
+            `# How to use \`/boydancer\` options
+            **\`Viber\` - Select your background viber
+            \`File\` - Select this if you want to use a local file (video or audio)
+            \`Link\` - Select this if you want to use a youtube or file link (video or audio)
+            \`Search\` - Search titles of youtube videos
+            \`Start\` - Select this to add a start time from the source audio/video (e.g. 0:24, 2:52)
+            \`End\` - Select this to add a end time from the source audio/video (e.g. 0:24, 2:52)
+            \`Speed\` - Select the song speed, input it as a percentage without the percentage symbol (minimum: 50%, maximum: 200%)
+            \`BPM\` - Select the Viber bpm (beats per minute) EPILEPSY WARNING (minimum: 50, maximum: 500)
+            __MAX UPLOAD VIDEO LENGTH IS 10 MINUTES!!!__
+            __MAX BOYDANCER VIDEO LENGTH IS 2 MINUTES!!!__**
+            
+            ### Supported Files:
+            \`${correctFile.join('\`, \`')}\``
         )
         .addFields([
             {
                 name: `Other info`,
-                value: `>>> ** <:inthezone:1145609078891106334> \`${allguilds}\` Guilds \n <a:spinmerightround:1145609663824527360> ${botuptime} Uptime \n <:6969iq:1145609956490481724> \`${client.ws.ping}\` Ping \n <:boythinker:1146052187118637157> \`${client.config.news.version}\` Version \n Premium (coming soon)**\nUse \`/report bug\` to report bugs and other stuff! ${bugs > 0 ? `currently \`${bugs}\` bugs` : " "}` },
+                value:
+                ` **> <:6969iq:1168249183111745618> \`${client.ws.ping}\` Ping
+                > <a:spinmerightround:1168252685330415637> ${botuptime} Uptime
+                > <:inthezone:1168249217005932605> \`${allguilds}\` Guilds ${bugs1 > 0 ? `\n> <:devilish:1168249108511854632> \`${bugs1}\` Current bugs` : " "}
+                > Use \`/report bug\` to report bugs and other stuff!
+                [Support the Bot Developer!](https://ko-fi.com/ashthedergy)**
+                
+                **HUGE THANKS TO __uwu_peter__ FOR HELP IN DEVELOPING!**`
+            },
             {
-              	name: `What's new?`,
+                name: `Supporters:`,
+                value: `${supporters.join('\n')}`,
+            },
+            {
+              	name: `What's new? \`${client.config.news.version}\``,
                 value: `${client.config.news.new.join('\n')}`
             },
         ])
         .setColor('#' + Math.floor(Math.random() * 0xFFFFFF).toString(16).padEnd(6, '0'))
         .setThumbnail('https://cdn.discordapp.com/attachments/873603423998705718/1145618819876921416/fZRZQdu.gif')
         .setAuthor({
-            name: client.user.tag,
+            name: client.user.username,
             iconURL: client.user.displayAvatarURL({dynamic:true})
-        })
-        .setFooter(client.getFooter(interaction.user));
-
+        });
+        
+        cooldownUser(interaction.user.id, 10);
         interaction.reply({
             embeds: [helpEmbed],
-            ephemeral: true, //you can turn this to false if you wish others to see the help command
+            ephemeral: true,
         });
+        
+        function cooldownUser(user, time) {
+            cooldowns.set(user, Date.now() + time * 1000); //time in seconds
+            setTimeout(() => cooldowns.delete(interaction.user.id), time * 1000);
+        }
     },
-}
+};

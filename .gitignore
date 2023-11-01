@@ -14,4 +14,4 @@ data/premium/*
 data/usage/*
 
 # Ignore MP4s
-files/permanentFiles/*.MP4s
+files/permanentFiles/*.mp4

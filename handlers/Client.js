@@ -5,7 +5,7 @@ const {
     Partials,
     User,
     EmbedBuilder,
-  } = require("discord.js");
+} = require("discord.js");
 
 const Discord = require('discord.js')
 const fs = require("fs");
@@ -52,24 +52,24 @@ class PH extends Client {
         this.login(token);
     }
 
-    /**
+  /**
    *
    * @param {User} user
    * @returns
    */
     getFooter(user) {
-    let obj = {
-        text: `Requested By ${user.tag.endsWith("#0") ? user.tag.slice(0, -2) : user.tag}`,
-        iconURL: user.displayAvatarURL(),
-    };
-    if (options.embedFooter) {
-        return obj;
-    } else {
-        return {
-        text: " ",
-        iconURL: " ",
-        };
-    }
+      let obj = {
+          text: `Requested By ${user.tag.endsWith("#0") ? user.tag.slice(0, -2) : user.tag}`,
+          iconURL: user.displayAvatarURL(),
+      };
+      if (options.embedFooter) {
+          return obj;
+      } else {
+          return {
+          text: " ",
+          iconURL: " ",
+          };
+      }
     }
 
     embed(interaction, data) {

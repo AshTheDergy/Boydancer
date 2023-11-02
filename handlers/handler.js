@@ -90,7 +90,6 @@ module.exports = async (client) => {
     console.log(e);
   }
 
-  
     // Loading Event Files
     try {
       let eventCount = 0;
@@ -104,5 +103,4 @@ module.exports = async (client) => {
     } catch (e) {
       console.log(e);
     }
-  };
-  
+};

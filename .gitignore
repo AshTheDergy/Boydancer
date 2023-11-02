@@ -15,3 +15,9 @@ data/usage/*
 
 # Ignore MP4s
 files/permanentFiles/*.mp4
+
+# Ignore JS Swap Files
+**/*.swp
+
+# Ignore Audio
+files/temporaryYoutube/*.wav

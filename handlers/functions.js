@@ -9,11 +9,11 @@ const {
     StringSelectMenuBuilder,
     ButtonBuilder,
     ButtonStyle,
-  } = require("discord.js");
-  const client = require("../index");
-  const fetch = require('node-fetch')
+} = require("discord.js");
+const client = require("../index");
+const fetch = require('node-fetch');
 
-  /**
+/**
  *
  * @param {Interaction} interaction
  * @param {String} cmd

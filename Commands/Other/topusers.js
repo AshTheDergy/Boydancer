@@ -48,7 +48,7 @@ module.exports = {
         .setTitle(`Top 5 boydancers!!`)
         .setColor('#' + Math.floor(Math.random() * 0xFFFFFF).toString(16).padEnd(6, '0'))
         .setDescription(description);
-       if (messageAuthor && !topUsers.some(user => user.id === interaction.user.id)) {
+        if (messageAuthor && !topUsers.some(user => user.id === interaction.user.id)) {
         lb.setDescription(description + '\n' + `**\` ${allUsers.findIndex(user => user.id === interaction.user.id) + 1}. \` ${interaction.user.username} Used: ${messageAuthor.used}, Successes: ${messageAuthor.successes}**`);
         }
         interaction.followUp({

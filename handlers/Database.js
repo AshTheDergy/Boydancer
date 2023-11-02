@@ -40,5 +40,5 @@ module.exports = async (client) => {
         let server = await client.usage.get(guild.id);
         if (!server) return;
         await client.usage.delete(guild.id);
-      });
+    });
 };

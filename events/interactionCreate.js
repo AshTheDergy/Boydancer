@@ -1,11 +1,8 @@
+const util = require('util');
 const client = require("../index");
-const {
-  cooldown,
-} = require("../handlers/functions");
-const { emoji } = require("../settings/config");
-const {
-  ApplicationCommandOptionType,
-} = require("discord.js");
+const { cooldown } = require("../handlers/functions");
+const { emoji, strings } = require("../settings/config");
+const { ApplicationCommandOptionType } = require("discord.js");
 
 client.on("interactionCreate", async (interaction) => {
   if (interaction.isCommand()) {
@@ -16,7 +13,7 @@ client.on("interactionCreate", async (interaction) => {
       if (!cmd) {
         return client.embed(
           interaction,
-          `${emoji.error} \`${cmdName}\` Command Not Found`
+          util.format(strings.error.command_not_found, emoji.error, cmdName),
         );
       } else {
         const args = [];
@@ -34,10 +31,7 @@ client.on("interactionCreate", async (interaction) => {
         if (cooldown(interaction, cmd)) {
           return client.embed(
             interaction,
-            `You are On Cooldown, wait \`${cooldown(
-              interaction,
-              cmd
-            ).toFixed()}\` Seconds`
+            util.format(strings.cooldown, cooldown(interaction, cmd).toFixed()),
           );
         } else {
           cmd.run(client, interaction, args);
@@ -49,7 +43,7 @@ client.on("interactionCreate", async (interaction) => {
       if (!cmd) {
         return client.embed(
           interaction,
-          `${emoji.error} \`${cmdName}\` Command Not Found`
+          util.format(strings.error.command_not_found, emoji.error, cmdName),
         );
       } else {
         const args = [];
@@ -67,10 +61,7 @@ client.on("interactionCreate", async (interaction) => {
         if (cooldown(interaction, cmd)) {
           return client.embed(
             interaction,
-            `You are On Cooldown, wait \`${cooldown(
-              interaction,
-              cmd
-            ).toFixed()}\` Seconds`
+            util.format(strings.cooldown, cooldown(interaction, cmd).toFixed()),
           );
         } else {
           cmd.run(client, interaction, args);

@@ -87,7 +87,7 @@ async function handleSoundCloud(client, interaction, audioUrl, cooldowns) {
                 cooldownUser(cooldowns, interaction, 10);
                 return;
             } else if (start + danceEnd < end) {
-                interaction.reply({ content: util.format(config.strings.error.time_over_danceEnd_limit, config.emoji.error), ephemeral: true });
+                interaction.reply({ content: util.format(config.strings.error.time_over_danceEnd_limit, config.emoji.error, danceEnd), ephemeral: true });
                 cooldownUser(cooldowns, interaction, 10);
                 return;
             } else if (start === end) {

@@ -59,6 +59,9 @@ async function downloadYoutubeVideo(interaction, videoUrl) {
 }
 
 async function handleYouTube(client, interaction, audioUrl, cooldowns) {
+    // Defer Reply
+    // await interaction.deferReply({ ephemeral: true });
+
     // User
     const author = interaction.user.id;
     
@@ -106,7 +109,7 @@ async function handleYouTube(client, interaction, audioUrl, cooldowns) {
                 cooldownUser(cooldowns, interaction, 10);
                 return;
             } else if (start + danceEnd < end) {
-                interaction.reply({ content: util.format(config.strings.error.time_over_danceEnd_limit, config.emoji.error), ephemeral: true });
+                interaction.reply({ content: util.format(config.strings.error.time_over_danceEnd_limit, config.emoji.error, danceEnd), ephemeral: true });
                 cooldownUser(cooldowns, interaction, 10);
                 return;
             } else if (start === end) {
@@ -187,4 +190,4 @@ async function handleYouTube(client, interaction, audioUrl, cooldowns) {
     }
 }
 
-module.exports = { handleYouTube, isWorkingLink_Youtube, isYoutubeLink };
+module.exports = { handleYouTube, isWorkingLink_Youtube, isYoutubeLink, downloadYoutubeVideo };

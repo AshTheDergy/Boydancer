@@ -3,6 +3,39 @@ const util = require('util');
 const ffmpeg = require('fluent-ffmpeg');
 const config = require("../settings/config");
 
+// Link functions
+
+async function getVideoDuration(interaction, videoUrl) {
+    // Error Handling suggested by Wroclaw
+    // process.on('unhandledRejection', (reason) => {
+    //     if (!interaction.replied) {
+    //         interaction.reply(util.format(config.strings.error.video_geenration_detailed, reason.message));
+    //     }      
+    // });
+
+    return await new Promise((resolve, reject) => {
+        try {
+            ffmpeg.ffprobe(videoUrl, (err, metadata) => {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+                if (metadata && metadata.format && metadata.format.duration) {
+                    const totalDurationInSeconds = parseFloat(metadata.format.duration);
+                    resolve(totalDurationInSeconds.toFixed(1));
+                } else {
+                    resolve(null);
+                }
+            });
+        } catch (error) {
+            if (!interaction.replied) {
+                interaction.reply(util.format(config.strings.error.video_geenration_detailed, reason.message));
+            }  
+        }
+        
+    });
+}
+
 // Functions
 function cooldownUser(cooldown_map, interaction, time) {
     cooldown_map.set(interaction.user.id, Date.now() + time * 1000); //time in seconds
@@ -102,4 +135,4 @@ async function applyAudioWithDelay(interaction, file, start, end, delay, danceEn
     await applyAudioToVideoFILE(interaction, file, start, end, danceEnd);
 }
 
-module.exports = { cooldownUser, giveSecondsFromTime, applyAudioWithDelay };
+module.exports = { cooldownUser, giveSecondsFromTime, applyAudioWithDelay, getVideoDuration };

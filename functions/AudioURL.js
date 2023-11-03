@@ -1,40 +1,9 @@
 const fs = require('fs');
 const util = require('util');
-const { giveSecondsFromTime, cooldownUser, applyAudioWithDelay } = require("./CommonFunctions");
-const ffmpeg = require('fluent-ffmpeg');
+const { giveSecondsFromTime, cooldownUser, applyAudioWithDelay, getVideoDuration } = require("./CommonFunctions");
 const config = require("../settings/config");
-const IsOk = require('status-is-ok');
-
-// Link functions
-
-async function getVideoDuration(interaction, videoUrl) {
-    return new Promise((resolve, reject) => {
-        ffmpeg.ffprobe(videoUrl, (err, metadata) => {
-            if (err) {
-                reject(err);
-                return;
-            }
-            if (metadata && metadata.format && metadata.format.duration) {
-                const totalDurationInSeconds = parseFloat(metadata.format.duration);
-                resolve(totalDurationInSeconds.toFixed(1));
-            } else {
-                resolve(null);
-            }
-        });
-    });
-}
 
 async function handleURL(client, interaction, audioUrl, cooldowns) {
-
-    const isUrlOk = new IsOk();
-    isUrlOk.check(audioUrl)
-        .catch(error => {
-            var message = `${error.status} ${error.message}`;
-            interaction.reply(util.format(config.strings.error.video_geenration_detailed, message));
-            return;
-        });
-
-
     // User
     const author = interaction.user.id;
 
@@ -71,7 +40,7 @@ async function handleURL(client, interaction, audioUrl, cooldowns) {
             cooldownUser(cooldowns, interaction, 10);
             return;
         } else if (start + danceEnd < end) {
-            interaction.reply({ content: util.format(config.strings.error.time_over_danceEnd_limit, config.emoji.error), ephemeral: true });
+            interaction.reply({ content: util.format(config.strings.error.time_over_danceEnd_limit, config.emoji.error, danceEnd), ephemeral: true });
             cooldownUser(cooldowns, interaction, 10);
             return;
         } else if (start === end) {

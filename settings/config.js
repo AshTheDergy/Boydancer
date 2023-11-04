@@ -74,7 +74,7 @@ module.exports = {
         generation: "Generating video... <a:boypet2:1168249848055734343>",
         epilepsy: "\n<:boys:1168248994108030977> EPILEPSY WARNING <:boys:1168248994108030977>\n",
         finished: "Here is your boydancer:",
-        cooldown: "`You are On Cooldown, wait `%s` Seconds",
+        cooldown: "You are On Cooldown, wait `%s` Seconds",
         description: "Apply audio to the boykisser dancing video. Maximum of 120 seconds",
         random_invalid_replies: [`Ha Ha very funny. "lem e putt .gsgl gggmgm as jok" :nerd::nerd::nerd:`, `No...`, `Kindly deactivate yourself :blush:`, `Mods, crush his skull`, `I'm gonna fuck your mother`, `hey buddy. we're going to kill you and leave you laid out in a dumpster to rot`, `https://cdn.discordapp.com/attachments/873603423998705718/1145258850132443206/8apAlKE.gif`, `https://cdn.discordapp.com/attachments/873603423998705718/1145258963676430346/cqtykgb.gif`, `https://cdn.discordapp.com/attachments/873603423998705718/1145985376515788800/pjSHLOr.png`],
     }

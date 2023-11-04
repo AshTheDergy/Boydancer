@@ -1,0 +1,16 @@
+{
+    "compilerOptions": {
+        "target": "ESNext",
+        "sourceMap": true,
+        "outDir": "./dist/",
+        "rootDir": "./",
+        //"strict": true,
+        "moduleResolution": "node",
+        "esModuleInterop": true,
+        "resolveJsonModule": true,
+        "allowJs": true,
+        "checkJs": true,
+        // remove after adding all required typings
+        "noImplicitAny": false
+    }
+}

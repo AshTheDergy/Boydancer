@@ -24,3 +24,6 @@ files/temporaryYoutube/*.wav
 
 # VS Code
 .vscode/*
+
+# Ignore typescript output
+dist

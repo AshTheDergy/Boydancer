@@ -138,6 +138,10 @@ async function handleSearch(client, interaction, searchTitle, cooldowns) {
             const videoUrl = info.url;
             await downloadYoutubeVideo(interaction, videoUrl);
             cooldownUser(cooldowns, interaction, 5);
+
+            // Tell the DB that the current User has started an Interaction
+            await client.interaction_db.set(author);
+
             try {
                 await applyAudioWithDelay(interaction, tempYoutubePath, danceStart, length < danceEnd ? length : danceEnd, 8000, danceEnd);
                 await interaction.editReply({ content: finalMessage, files: [{ attachment: outputVideoPath, name: `${finalFileName}.mp4` }] });
@@ -145,6 +149,9 @@ async function handleSearch(client, interaction, searchTitle, cooldowns) {
                 fs.unlinkSync(tempYoutubePath);
                 cooldownUser(cooldowns, interaction, 60);
                 await client.usage.set(`${interaction.guildId}.${author}.successful`, usedSuccessful ? usedSuccessful + 1 : 1);
+
+                // Tell the DB that the current User has finished their Interaction
+                await client.interaction_db.delete(author);
             } catch (error) {
                 console.error(config.strings.error.video_generation, error);
                 interaction.followUp(util.format(config.strings.error.video_generation_detailed, error));
@@ -152,6 +159,9 @@ async function handleSearch(client, interaction, searchTitle, cooldowns) {
                 if (beatsPerMin) {
                     fs.unlinkSync(tempVideoPath);
                 }
+
+                // Tell the DB that the current User has finished their Interaction
+                await client.interaction_db.delete(author);
             }
         }
     }

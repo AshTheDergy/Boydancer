@@ -1,5 +1,4 @@
 const Josh = require("@joshdb/core");
-const { Client } = require("discord.js");
 const provider = require("@joshdb/json");
 
 /**
@@ -33,6 +32,11 @@ module.exports = async (client) => {
             collection: "bugs",
             dbName: client.user.username.replace(" ", ""),
         },
+    });
+
+    client.interaction_db = new Josh({
+        name: "interaction_db",
+        provider: provider,
     });
 
     client.on("guildDelete", async (guild) => {

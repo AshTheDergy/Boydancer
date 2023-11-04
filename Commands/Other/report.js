@@ -50,6 +50,6 @@ module.exports = {
         function cooldownUser(user, time) {
             cooldowns.set(user, Date.now() + time * 1000); //time in seconds
             setTimeout(() => cooldowns.delete(interaction.user.id), time * 1000);
-        };
+        }
     },
 }

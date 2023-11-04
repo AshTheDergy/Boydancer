@@ -133,6 +133,12 @@ module.exports = {
         const cooldown = cooldowns.get(author);
         cooldownUser(cooldowns, interaction, 1);
 
+        // Check if User already has an active running Interaction logged in the DB
+        if (await client.interaction_db.has(author)) {
+            interaction.reply({ content: "Whoa there buddy slow down. Please wait for your previous Boydancer Video to finish generating.", ephemeral: true });
+            return;
+        }
+
         if (cooldown && !whiteListed.includes(author)) {
             const remaining = humanizeDuration(cooldown - Date.now(), { units: ['m', 's'], round: true });
             interaction.reply({ content: util.format(config.strings.cooldown, remaining), ephemeral: true });

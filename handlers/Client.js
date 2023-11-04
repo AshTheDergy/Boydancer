@@ -1,4 +1,4 @@
-const { Client, Collection, GatewayIntentBits, Partials, User, EmbedBuilder } = require("discord.js");
+const { Client, Collection, GatewayIntentBits, Partials, EmbedBuilder } = require("discord.js");
 const Discord = require('discord.js')
 const fs = require("fs");
 const { options } = require("../settings/config");

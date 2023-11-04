@@ -4,14 +4,8 @@ node_modules/*
 # Ignore .env
 .env
 
-# Ignore uploading Bugs to GitHub
-data/bugs/*
-
-# Ignore uploading Premium Data to GitHub
-data/premium/*
-
-# Ignore uploading Leaderboard to GitHub
-data/usage/*
+# Ignore uploading the Databases to GitHub
+data/*
 
 # Ignore MP4s
 files/permanentFiles/*.mp4
@@ -24,6 +18,3 @@ files/temporaryYoutube/*.wav
 
 # VS Code
 .vscode/*
-
-# Ignore typescript output
-dist

@@ -1,17 +1,6 @@
-const {
-  Interaction,
-  Collection,
-  Client,
-  GuildMember,
-  PermissionFlagsBits,
-  EmbedBuilder,
-  ActionRowBuilder,
-  StringSelectMenuBuilder,
-  ButtonBuilder,
-  ButtonStyle,
-} = require("discord.js");
-const client = require("../index");
-const fetch = require('node-fetch');
+const { Collection } = require("discord.js");
+// const client = require("../index");
+// const fetch = require('node-fetch');
 
 /**
  *
@@ -53,7 +42,4 @@ function toPascalCase(string) {
     .join("");
 }
 
-module.exports = {
-  cooldown,
-  toPascalCase,
-};
+module.exports = { cooldown, toPascalCase };

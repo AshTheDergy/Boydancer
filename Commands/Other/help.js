@@ -1,7 +1,6 @@
 const { CommandInteraction, EmbedBuilder } = require('discord.js');
 const PH = require("../../handlers/Client");
 const cooldowns = new Map();
-const humanizeDuration = require('humanize-duration');
 
 module.exports = {
     name: "help",
@@ -56,7 +55,7 @@ module.exports = {
             __MAX BOYDANCER VIDEO LENGTH IS 2 MINUTES!!!__**
             
             ### Supported Files:
-            \`${correctFile.join('\`, \`')}\``
+            \`${correctFile}\``
             )
             .addFields([
                 {

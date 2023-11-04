@@ -7,7 +7,7 @@ const { ApplicationCommandOptionType } = require("discord.js");
 client.on("interactionCreate", async (interaction) => {
   if (interaction.isCommand()) {
     const cmdName = interaction.commandName;
-  
+
     if (cmdName === 'help' || cmdName === 'boydancer') {
       const cmd = client.commands.get(cmdName);
       if (!cmd) {
@@ -27,7 +27,7 @@ client.on("interactionCreate", async (interaction) => {
             args.push(option.value);
           }
         }
-  
+
         if (cooldown(interaction, cmd)) {
           return client.embed(
             interaction,
@@ -38,7 +38,7 @@ client.on("interactionCreate", async (interaction) => {
         }
       }
     } else {
-      await interaction.deferReply({ ephemeral: false }).catch((e) => {});
+      await interaction.deferReply({ ephemeral: false }).catch((e) => { });
       const cmd = client.commands.get(cmdName);
       if (!cmd) {
         return client.embed(
@@ -57,7 +57,7 @@ client.on("interactionCreate", async (interaction) => {
             args.push(option.value);
           }
         }
-  
+
         if (cooldown(interaction, cmd)) {
           return client.embed(
             interaction,
@@ -70,7 +70,7 @@ client.on("interactionCreate", async (interaction) => {
     }
   }
   if (interaction.isContextMenuCommand()) {
-    await interaction.deferReply({ ephemeral: true }).catch((e) => {});
+    await interaction.deferReply({ ephemeral: true }).catch((e) => { });
     const command = client.commands.get(interaction.commandName);
     if (command) command.run(client, interaction);
   }

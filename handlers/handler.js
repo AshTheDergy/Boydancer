@@ -1,9 +1,5 @@
 const { readdirSync } = require("fs");
-const {
-  ApplicationCommandType,
-  ApplicationCommandOptionType,
-} = require("discord.js");
-
+const { ApplicationCommandType, ApplicationCommandOptionType } = require("discord.js");
 const PH = require("./Client");
 
 /**
@@ -90,17 +86,17 @@ module.exports = async (client) => {
     console.log(e);
   }
 
-    // Loading Event Files
-    try {
-      let eventCount = 0;
-      readdirSync("./events")
-        .filter((f) => f.endsWith(".js"))
-        .forEach((event) => {
-          require(`../events/${event}`);
-          eventCount++;
-        });
-      console.log(`${eventCount} Events Loaded`);
-    } catch (e) {
-      console.log(e);
-    }
+  // Loading Event Files
+  try {
+    let eventCount = 0;
+    readdirSync("./events")
+      .filter((f) => f.endsWith(".js"))
+      .forEach((event) => {
+        require(`../events/${event}`);
+        eventCount++;
+      });
+    console.log(`${eventCount} Events Loaded`);
+  } catch (e) {
+    console.log(e);
+  }
 };

@@ -44,9 +44,12 @@ async function downloadSoundCloud(interaction, audioUrl) {
 }
 
 async function handleSoundCloud(client, interaction, audioUrl, cooldowns) {
+    // Defer Reply
+    await interaction.deferReply();
+
     // User
     const author = interaction.user.id;
-    
+
     // Timing
     var danceStart = 0;
     var danceEnd = config.whitelisted.includes(author) ? config.danceEnd_Premium : config.danceEnd_Normal;
@@ -63,7 +66,7 @@ async function handleSoundCloud(client, interaction, audioUrl, cooldowns) {
 
     // Strings
     const finalFileName = viber == 1 ? `Boydancer` : viber == 2 ? `Boyviber` : `gaysex`;
-    const finalMessage = `${interaction.user}${beatsPerMin > 225  && viber == 1 ? config.strings.epilepsy : '\n'}${config.strings.finished}`;
+    const finalMessage = `${interaction.user}${beatsPerMin > 225 && viber == 1 ? config.strings.epilepsy : '\n'}${config.strings.finished}`;
 
     // Usage / Leaderboard
     let used = await client.usage.get(`${interaction.guildId}.${author}`);
@@ -71,7 +74,7 @@ async function handleSoundCloud(client, interaction, audioUrl, cooldowns) {
 
     const length = await checkSoundCloudLength(audioUrl);
     if (length > maxInput) {
-        interaction.reply({ content: util.format(config.strings.error.soundcloud_song_too_big, config.emoji.error), ephemeral: true });
+        interaction.editReply({ content: util.format(config.strings.error.soundcloud_song_too_big, config.emoji.error) });
         cooldownUser(cooldowns, interaction, 10);
         return;
     } else {
@@ -79,19 +82,19 @@ async function handleSoundCloud(client, interaction, audioUrl, cooldowns) {
             const start = giveSecondsFromTime(author, startTime);
             const end = giveSecondsFromTime(author, endTime);
             if (start > length || end > length) {
-                interaction.reply({ content: util.format(config.strings.error.time_too_big, config.emoji.error), ephemeral: true });
+                interaction.editReply({ content: util.format(config.strings.error.time_too_big, config.emoji.error) });
                 cooldownUser(cooldowns, interaction, 10);
                 return;
             } else if (start >= end) {
-                interaction.reply({ content: util.format(config.strings.error.starttime_too_big, config.emoji.error), ephemeral: true });
+                interaction.editReply({ content: util.format(config.strings.error.starttime_too_big, config.emoji.error) });
                 cooldownUser(cooldowns, interaction, 10);
                 return;
             } else if (start + danceEnd < end) {
-                interaction.reply({ content: util.format(config.strings.error.time_over_danceEnd_limit, config.emoji.error, danceEnd), ephemeral: true });
+                interaction.editReply({ content: util.format(config.strings.error.time_over_danceEnd_limit, config.emoji.error, danceEnd) });
                 cooldownUser(cooldowns, interaction, 10);
                 return;
             } else if (start === end) {
-                interaction.reply({ content: util.format(config.strings.error.time_is_the_same, config.emoji.error), ephemeral: true });
+                interaction.editReply({ content: util.format(config.strings.error.time_is_the_same, config.emoji.error) });
                 cooldownUser(cooldowns, interaction, 10);
                 return;
             } else if (start === 0 && end) {
@@ -101,18 +104,18 @@ async function handleSoundCloud(client, interaction, audioUrl, cooldowns) {
                 danceStart = start;
                 danceEnd = end;
             } else {
-                interaction.reply({ content: util.format(config.strings.error.time_incorrect, config.emoji.error), ephemeral: true });
+                interaction.editReply({ content: util.format(config.strings.error.time_incorrect, config.emoji.error) });
                 cooldownUser(cooldowns, interaction, 10);
                 return;
             }
         } else if (!startTime && endTime) {
             const end = giveSecondsFromTime(endTime);
             if (end > length) {
-                interaction.reply({ content: util.format(config.strings.error.endtime_too_big, config.emoji.error), ephemeral: true });
+                interaction.editReply({ content: util.format(config.strings.error.endtime_too_big, config.emoji.error) });
                 cooldownUser(cooldowns, interaction, 10);
                 return;
             } else if (end === 0) {
-                interaction.reply({ content: util.format(config.strings.error.endtime_is_0, config.emoji.error), ephemeral: true });
+                interaction.editReply({ content: util.format(config.strings.error.endtime_is_0, config.emoji.error) });
                 cooldownUser(cooldowns, interaction, 10);
                 return;
             } else if (end <= danceEnd) {
@@ -121,14 +124,14 @@ async function handleSoundCloud(client, interaction, audioUrl, cooldowns) {
                 danceStart = end - danceEnd;
                 danceEnd = end;
             } else {
-                interaction.reply({ content: util.format(config.strings.error.endtime_incorrect, config.emoji.error), ephemeral: true });
+                interaction.editReply({ content: util.format(config.strings.error.endtime_incorrect, config.emoji.error) });
                 cooldownUser(cooldowns, interaction, 10);
                 return;
             }
         } else if (startTime && !endTime) {
             const start = giveSecondsFromTime(startTime);
             if (start > length) {
-                interaction.reply({ content: util.format(config.strings.error.starttime_bigger_than_video, config.emoji.error), ephemeral: true });
+                interaction.editReply({ content: util.format(config.strings.error.starttime_bigger_than_video, config.emoji.error) });
                 cooldownUser(cooldowns, interaction, 10);
                 return;
             } else if (start === 0) {
@@ -140,13 +143,13 @@ async function handleSoundCloud(client, interaction, audioUrl, cooldowns) {
                 danceStart = start;
                 danceEnd = start + danceEnd;
             } else {
-                interaction.reply({ content: util.format(config.strings.error.starttime_incorrect, config.emoji.error), ephemeral: true });
+                interaction.editReply({ content: util.format(config.strings.error.starttime_incorrect, config.emoji.error) });
                 cooldownUser(cooldowns, interaction, 10);
                 return;
             }
         }
 
-        await interaction.reply({ content: config.strings.generation });
+        await interaction.editReply({ content: config.strings.generation });
         await downloadSoundCloud(interaction, audioUrl);
         cooldownUser(cooldowns, interaction, 5);
         try {
@@ -158,7 +161,7 @@ async function handleSoundCloud(client, interaction, audioUrl, cooldowns) {
             await client.usage.set(`${interaction.guildId}.${author}.successful`, usedSuccessful ? usedSuccessful + 1 : 1);
         } catch (error) {
             console.error(config.strings.error.video_generation, error);
-            interaction.followUp(util.format(config.strings.error.video_geenration_detailed, error));
+            interaction.followUp(util.format(config.strings.error.video_generation_detailed, error));
             cooldownUser(cooldowns, interaction, 10);
             fs.unlinkSync(tempYoutubePath);
             if (beatsPerMin) {

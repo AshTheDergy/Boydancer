@@ -124,10 +124,10 @@ module.exports = {
         const whiteListed = config.whitelisted;
         const data = await client.premium.values;
         for (const key in data) {
-    		if (data.hasOwnProperty(key)) {
-        		whiteListed.push(`${data[key].userId}`);
-    		}
-	    }
+            if (data.hasOwnProperty(key)) {
+                whiteListed.push(`${data[key].userId}`);
+            }
+        }
 
         // Cooldowning
         const cooldown = cooldowns.get(author);
@@ -135,22 +135,22 @@ module.exports = {
 
         if (cooldown && !whiteListed.includes(author)) {
             const remaining = humanizeDuration(cooldown - Date.now(), { units: ['m', 's'], round: true });
-            interaction.reply({content: util.format(config.strings.cooldown, remaining), ephemeral: true});
+            interaction.reply({ content: util.format(config.strings.cooldown, remaining), ephemeral: true });
             return;
         } else if (!audioUrl && !audioFile && !searchTitle) {
-            interaction.reply({content: util.format(config.strings.error.invalid_everything, config.emoji.error), ephemeral: true});
+            interaction.reply({ content: util.format(config.strings.error.invalid_everything, config.emoji.error), ephemeral: true });
             cooldownUser(cooldowns, interaction, 10);
             return;
         } else if (audioUrl && !audioFile && !searchTitle) {
             if (!audioUrl.toLowerCase().startsWith("https://")) {
-                interaction.reply({content: util.format(config.strings.error.invalid_link, config.emoji.error), ephemeral: true});
+                interaction.reply({ content: util.format(config.strings.error.invalid_link, config.emoji.error), ephemeral: true });
                 cooldownUser(cooldowns, interaction, 10);
                 return;
             } else if (isYoutubeLink(audioUrl)) {
                 if (isWorkingLink_Youtube(audioUrl)) {
                     handleYouTube(client, interaction, audioUrl, cooldowns);
                 } else {
-                    interaction.reply({content: util.format(config.strings.error.youtube_video_does_not_exist, config.emoji.error), ephemeral: true});
+                    interaction.reply({ content: util.format(config.strings.error.youtube_video_does_not_exist, config.emoji.error), ephemeral: true });
                     cooldownUser(cooldowns, interaction, 10);
                     return;
                 }
@@ -158,14 +158,14 @@ module.exports = {
                 if (isWorkingLink_SoundCloud(audioUrl)) {
                     handleSoundCloud(client, interaction, audioUrl, cooldowns);
                 } else {
-                    interaction.reply({ content: util.format(config.strings.error.invalid_link_soundcloud, config.emoji.error), ephemeral: true });
+                    interaction.reply({ content: util.format(config.strings.error.invalid_link_soundcloud, config.emoji.error) });
                     cooldownUser(cooldowns, interaction, 10);
                     return;
                 }
             } else if (correctFile.some(extension => audioUrl.endsWith(extension))) {
                 handleURL(client, interaction, audioUrl, cooldowns);
             } else {
-                interaction.reply({content: util.format(config.strings.error.invalid_link, config.emoji.error), ephemeral: true});
+                interaction.reply({ content: util.format(config.strings.error.invalid_link, config.emoji.error), ephemeral: true });
                 cooldownUser(cooldowns, interaction, 10);
                 return;
             }

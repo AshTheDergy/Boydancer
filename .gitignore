@@ -21,3 +21,6 @@ files/permanentFiles/*.mp4
 
 # Ignore Audio
 files/temporaryYoutube/*.wav
+
+# VS Code
+.vscode/*

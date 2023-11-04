@@ -25,6 +25,9 @@ async function findVideoUrl(title) {
 }
 
 async function handleSearch(client, interaction, searchTitle, cooldowns) {
+    // Defer Reply
+    await interaction.deferReply();
+
     // User
     const author = interaction.user.id;
 
@@ -50,34 +53,34 @@ async function handleSearch(client, interaction, searchTitle, cooldowns) {
     let used = await client.usage.get(`${interaction.guildId}.${author}`);
     const usedSuccessful = used?.successful;
 
-    interaction.reply({ content: config.strings.generation });
+    interaction.editReply({ content: config.strings.generation });
     const info = await findVideoUrl(searchTitle);
     if (info.seconds == 0) {
-        interaction.editReply({ content: config.strings.error.youtube_is_livestream, ephemeral: true });
-        interaction.followUp({ content: config.strings.error.youtube_search_not_found, ephemeral: true });
+        interaction.editReply({ content: config.strings.error.youtube_is_livestream });
+        interaction.followUp({ content: config.strings.error.youtube_search_not_found });
     } else {
         const length = info.seconds;
         if (length > maxInput) {
-            interaction.editReply({ content: util.format(config.strings.error.youtube_too_long, config.emoji.error), ephemeral: true });
+            interaction.editReply({ content: util.format(config.strings.error.youtube_too_long, config.emoji.error) });
             cooldownUser(cooldowns, interaction, 10);
         } else {
             if (startTime && endTime) {
                 const start = giveSecondsFromTime(author, startTime);
                 const end = giveSecondsFromTime(author, endTime);
                 if (start > length || end > length) {
-                    interaction.editReply({ content: util.format(config.strings.error.time_too_big, config.emoji.error), ephemeral: true });
+                    interaction.editReply({ content: util.format(config.strings.error.time_too_big, config.emoji.error) });
                     cooldownUser(cooldowns, interaction, 10);
                     return;
                 } else if (start >= end) {
-                    interaction.editReply({ content: util.format(config.strings.error.starttime_too_big, config.emoji.error), ephemeral: true });
+                    interaction.editReply({ content: util.format(config.strings.error.starttime_too_big, config.emoji.error) });
                     cooldownUser(cooldowns, interaction, 10);
                     return;
                 } else if (start + danceEnd < end) {
-                    interaction.editReply({ content: util.format(config.strings.error.time_over_danceEnd_limit, config.emoji.error, danceEnd), ephemeral: true });
+                    interaction.editReply({ content: util.format(config.strings.error.time_over_danceEnd_limit, config.emoji.error, danceEnd) });
                     cooldownUser(cooldowns, interaction, 10);
                     return;
                 } else if (start === end) {
-                    interaction.editReply({ content: util.format(config.strings.error.time_is_the_same, config.emoji.error), ephemeral: true });
+                    interaction.editReply({ content: util.format(config.strings.error.time_is_the_same, config.emoji.error) });
                     cooldownUser(cooldowns, interaction, 10);
                     return;
                 } else if (start === 0 && end) {
@@ -87,18 +90,18 @@ async function handleSearch(client, interaction, searchTitle, cooldowns) {
                     danceStart = start;
                     danceEnd = end;
                 } else {
-                    interaction.reply({ content: util.format(config.strings.error.time_incorrect, config.emoji.error), ephemeral: true });
+                    interaction.editReply({ content: util.format(config.strings.error.time_incorrect, config.emoji.error) });
                     cooldownUser(cooldowns, interaction, 10);
                     return;
                 }
             } else if (!startTime && endTime) {
                 const end = giveSecondsFromTime(author, endTime);
                 if (end > length) {
-                    interaction.editReply({ content: util.format(config.strings.error.endtime_too_big, config.emoji.error), ephemeral: true });
+                    interaction.editReply({ content: util.format(config.strings.error.endtime_too_big, config.emoji.error) });
                     cooldownUser(cooldowns, interaction, 10);
                     return;
                 } else if (end === 0) {
-                    interaction.editReply({ content: util.format(config.strings.error.endtime_is_0, config.emoji.error), ephemeral: true });
+                    interaction.editReply({ content: util.format(config.strings.error.endtime_is_0, config.emoji.error) });
                     cooldownUser(cooldowns, interaction, 10);
                     return;
                 } else if (end <= danceEnd) {
@@ -107,14 +110,14 @@ async function handleSearch(client, interaction, searchTitle, cooldowns) {
                     danceStart = end - danceEnd;
                     danceEnd = end;
                 } else {
-                    interaction.editReply({ content: util.format(config.strings.error.endtime_incorrect, config.emoji.error), ephemeral: true });
+                    interaction.editReply({ content: util.format(config.strings.error.endtime_incorrect, config.emoji.error) });
                     cooldownUser(cooldowns, interaction, 10);
                     return;
                 }
             } else if (startTime && !endTime) {
                 const start = giveSecondsFromTime(author, startTime);
                 if (start > length) {
-                    interaction.editReply({ content: util.format(config.strings.error.starttime_bigger_than_video, config.emoji.error), ephemeral: true });
+                    interaction.editReply({ content: util.format(config.strings.error.starttime_bigger_than_video, config.emoji.error) });
                     cooldownUser(cooldowns, interaction, 10);
                     return;
                 } else if (start === 0) {
@@ -126,7 +129,7 @@ async function handleSearch(client, interaction, searchTitle, cooldowns) {
                     danceStart = start;
                     danceEnd = start + danceEnd;
                 } else {
-                    interaction.editReply({ content: util.format(config.strings.error.starttime_incorrect, config.emoji.error), ephemeral: true });
+                    interaction.editReply({ content: util.format(config.strings.error.starttime_incorrect, config.emoji.error) });
                     cooldownUser(cooldowns, interaction, 10);
                     return;
                 }
@@ -144,7 +147,7 @@ async function handleSearch(client, interaction, searchTitle, cooldowns) {
                 await client.usage.set(`${interaction.guildId}.${author}.successful`, usedSuccessful ? usedSuccessful + 1 : 1);
             } catch (error) {
                 console.error(config.strings.error.video_generation, error);
-                interaction.followUp(util.format(config.strings.error.video_geenration_detailed, error));
+                interaction.followUp(util.format(config.strings.error.video_generation_detailed, error));
                 cooldownUser(cooldowns, interaction, 10);
                 if (beatsPerMin) {
                     fs.unlinkSync(tempVideoPath);

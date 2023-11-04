@@ -3,36 +3,31 @@ const util = require('util');
 const ffmpeg = require('fluent-ffmpeg');
 const config = require("../settings/config");
 
-// Link functions
-
 async function getVideoDuration(interaction, videoUrl) {
-    // Error Handling suggested by Wroclaw
-    // process.on('unhandledRejection', (reason) => {
-    //     if (!interaction.replied) {
-    //         interaction.reply(util.format(config.strings.error.video_geenration_detailed, reason.message));
-    //     }      
-    // });
-
-    return await new Promise((resolve, reject) => {
-        try {
-            ffmpeg.ffprobe(videoUrl, (err, metadata) => {
-                if (err) {
-                    reject(err);
-                    return;
-                }
-                if (metadata && metadata.format && metadata.format.duration) {
-                    const totalDurationInSeconds = parseFloat(metadata.format.duration);
-                    resolve(totalDurationInSeconds.toFixed(1));
-                } else {
-                    resolve(null);
-                }
-            });
-        } catch (error) {
-            if (!interaction.replied) {
-                interaction.reply(util.format(config.strings.error.video_geenration_detailed, reason.message));
-            }  
+    // Node.JS Error Handling suggested by Wroclaw. Yes this is garbage, but working garbage
+    const callback = (reason) => {
+        if (!interaction.replied) {
+            interaction.editReply(util.format(config.strings.error.video_generation_detailed, reason.message));
         }
-        
+    };
+    process.on('unhandledRejection', callback);
+
+    return new Promise((resolve, reject) => {
+        ffmpeg.ffprobe(videoUrl, (err, metadata) => {
+            if (err) {
+                reject(err);
+                return;
+            }
+            if (metadata && metadata.format && metadata.format.duration) {
+                const totalDurationInSeconds = parseFloat(metadata.format.duration);
+                resolve(totalDurationInSeconds.toFixed(1));
+
+                // Remove Error Handler after it isn't needed anymore
+                process.removeListener('unhandledRejection', callback);
+            } else {
+                resolve(null);
+            }
+        });
     });
 }
 

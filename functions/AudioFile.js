@@ -1,9 +1,12 @@
 const fs = require('fs');
 const util = require('util');
-const { giveSecondsFromTime, cooldownUser, applyAudioWithDelay } = require("./CommonFunctions");
+const { giveSecondsFromTime, cooldownUser, applyAudioWithDelay, getVideoDuration } = require("./CommonFunctions");
 const config = require("../settings/config");
 
 async function handleFile(client, interaction, audioFile, cooldowns) {
+    // Defer Reply
+    await interaction.deferReply();
+
     // User
     const author = interaction.user.id;
 
@@ -32,32 +35,32 @@ async function handleFile(client, interaction, audioFile, cooldowns) {
     const fileName = audioFile.name;
 
     if (audioFile.size >= 50000000) {
-        interaction.reply({ content: util.format(config.strings.error.file_too_big, config.emoji.error), ephemeral: true });
+        interaction.editReply({ content: util.format(config.strings.error.file_too_big, config.emoji.error) });
         cooldownUser(cooldowns, interaction, 10);
         return;
     } else if (!config.correctFile.some(extension => fileName.endsWith(extension))) {
-        interaction.reply({ content: util.format(config.strings.error.invalid_file, config.emoji.error), ephemeral: true });
+        interaction.editReply({ content: util.format(config.strings.error.invalid_file, config.emoji.error) });
         cooldownUser(cooldowns, interaction, 10);
         return;
     } else {
-        const length = await getVideoDuration(author, file);
+        const length = await getVideoDuration(interaction, file);
         if (startTime && endTime) {
             const start = giveSecondsFromTime(author, startTime);
             const end = giveSecondsFromTime(author, endTime);
             if (start > length || end > length) {
-                interaction.reply({ content: util.format(config.strings.error.time_too_big, config.emoji.error), ephemeral: true });
+                interaction.editReply({ content: util.format(config.strings.error.time_too_big, config.emoji.error) });
                 cooldownUser(cooldowns, interaction, 10);
                 return;
             } else if (start >= end) {
-                interaction.reply({ content: util.format(config.strings.error.starttime_too_big, config.emoji.error), ephemeral: true });
+                interaction.editReply({ content: util.format(config.strings.error.starttime_too_big, config.emoji.error) });
                 cooldownUser(cooldowns, interaction, 10);
                 return;
             } else if (start + danceEnd < end) {
-                interaction.reply({ content: util.format(config.strings.error.time_over_danceEnd_limit, config.emoji.error, danceEnd), ephemeral: true });
+                interaction.editReply({ content: util.format(config.strings.error.time_over_danceEnd_limit, config.emoji.error, danceEnd) });
                 cooldownUser(cooldowns, interaction, 10);
                 return;
             } else if (start === end) {
-                interaction.reply({ content: util.format(config.strings.error.time_is_the_same, config.emoji.error), ephemeral: true });
+                interaction.editReply({ content: util.format(config.strings.error.time_is_the_same, config.emoji.error) });
                 cooldownUser(cooldowns, interaction, 10);
                 return;
             } else if (start === 0 && end) {
@@ -67,18 +70,18 @@ async function handleFile(client, interaction, audioFile, cooldowns) {
                 danceStart = start;
                 danceEnd = end;
             } else {
-                interaction.reply({ content: util.format(config.strings.error.time_incorrect, config.emoji.error), ephemeral: true });
+                interaction.editReply({ content: util.format(config.strings.error.time_incorrect, config.emoji.error) });
                 cooldownUser(cooldowns, interaction, 10);
                 return;
             }
         } else if (!startTime && endTime) {
-            const end = giveSecondsFromTime(endTime);
+            const end = giveSecondsFromTime(author, endTime);
             if (end > length) {
-                interaction.reply({ content: util.format(config.strings.error.endtime_too_big, config.emoji.error), ephemeral: true });
+                interaction.editReply({ content: util.format(config.strings.error.endtime_too_big, config.emoji.error) });
                 cooldownUser(cooldowns, interaction, 10);
                 return;
             } else if (end === 0) {
-                interaction.reply({ content: util.format(config.strings.error.endtime_is_0, config.emoji.error), ephemeral: true });
+                interaction.editReply({ content: util.format(config.strings.error.endtime_is_0, config.emoji.error) });
                 cooldownUser(cooldowns, interaction, 10);
                 return;
             } else if (end <= danceEnd) {
@@ -87,14 +90,14 @@ async function handleFile(client, interaction, audioFile, cooldowns) {
                 danceStart = end - danceEnd;
                 danceEnd = end;
             } else {
-                interaction.reply({ content: util.format(config.strings.error.endtime_incorrect, config.emoji.error), ephemeral: true });
+                interaction.editReply({ content: util.format(config.strings.error.endtime_incorrect, config.emoji.error) });
                 cooldownUser(cooldowns, interaction, 10);
                 return;
             }
         } else if (startTime && !endTime) {
-            const start = giveSecondsFromTime(startTime);
+            const start = giveSecondsFromTime(author, startTime);
             if (start > length) {
-                interaction.reply({ content: util.format(config.strings.error.starttime_bigger_than_video, config.emoji.error), ephemeral: true });
+                interaction.editReply({ content: util.format(config.strings.error.starttime_bigger_than_video, config.emoji.error) });
                 cooldownUser(cooldowns, interaction, 10);
                 return;
             } else if (start === 0) {
@@ -106,13 +109,13 @@ async function handleFile(client, interaction, audioFile, cooldowns) {
                 danceStart = start;
                 danceEnd = start + danceEnd;
             } else {
-                interaction.reply({ content: util.format(config.strings.error.starttime_incorrect, config.emoji.error), ephemeral: true });
+                interaction.editReply({ content: util.format(config.strings.error.starttime_incorrect, config.emoji.error) });
                 cooldownUser(cooldowns, interaction, 10);
                 return;
             }
         }
 
-        interaction.reply({ content: config.strings.generation });
+        interaction.editReply({ content: config.strings.generation });
         cooldownUser(cooldowns, interaction, 5);
         try {
             await applyAudioWithDelay(interaction, file, danceStart, length < danceEnd ? length : danceEnd, 5000, danceEnd);
@@ -122,7 +125,7 @@ async function handleFile(client, interaction, audioFile, cooldowns) {
             await client.usage.set(`${interaction.guildId}.${author}.successful`, usedSuccessful ? usedSuccessful + 1 : 1);
         } catch (error) {
             console.error(config.strings.error.video_generation, error);
-            interaction.followUp(util.format(config.strings.error.video_geenration_detailed, error));
+            interaction.followUp(util.format(config.strings.error.video_generation_detailed, error));
             cooldownUser(cooldowns, interaction, 10);
             if (beatsPerMin) {
                 fs.unlinkSync(tempVideoPath);

@@ -1,5 +1,10 @@
-const { CommandInteraction, EmbedBuilder } = require('discord.js');
-const PH = require("../../handlers/Client");
+// Typedef
+/**
+ * @typedef {import('../../handlers/Client')} PH
+ * @typedef {import("discord.js").CommandInteraction} CommandInteraction 
+ */
+
+const { EmbedBuilder } = require('discord.js');
 const cooldowns = new Map();
 
 module.exports = {
@@ -33,7 +38,7 @@ module.exports = {
         let supporters = [];
         const data = await client.premium.values;
         for (const key in data) {
-            if (data.hasOwnProperty(key)) {
+            if (Object.prototype.hasOwnProperty.call(data, key)) {
                 const user = data[key];
                 const userString = `${user.name} (<@${user.userId}>)`;
                 supporters.push(userString);

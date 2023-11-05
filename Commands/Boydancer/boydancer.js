@@ -1,7 +1,11 @@
+// Typedef
+/**
+ * @typedef {import('../../handlers/Client')} PH
+ * @typedef {import("discord.js").CommandInteraction} CommandInteraction 
+ */
+
 // Imports
 const util = require('util');
-const { CommandInteraction } = require("discord.js");
-const PH = require("../../handlers/Client");
 const humanizeDuration = require('humanize-duration');
 const { cooldownUser } = require("../../functions/CommonFunctions");
 
@@ -97,9 +101,9 @@ module.exports = {
     ],
 
     /**
-    * @param {PH} client
-    * @param {CommandInteraction} interaction
-    */
+     * @param {PH} client 
+     * @param {CommandInteraction} interaction 
+     */
     run: async (client, interaction) => {
         // Variables
         const author = interaction.user.id;
@@ -124,7 +128,7 @@ module.exports = {
         const whiteListed = config.whitelisted;
         const data = await client.premium.values;
         for (const key in data) {
-            if (data.hasOwnProperty(key)) {
+            if (Object.prototype.hasOwnProperty.call(data, key)) {
                 whiteListed.push(`${data[key].userId}`);
             }
         }

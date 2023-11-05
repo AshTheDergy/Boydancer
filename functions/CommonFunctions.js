@@ -1,3 +1,4 @@
+/* eslint-disable no-async-promise-executor */
 const fs = require('fs');
 const util = require('util');
 const ffmpeg = require('fluent-ffmpeg');
@@ -92,7 +93,19 @@ async function applyAudioToVideoFILE(interaction, file, start, end, danceEnd) {
     return new Promise(async (resolve, reject) => {
         if (beatsPerMin) {
             const bpm = beatsPerMin ? beatsPerMin > 500 ? 500 : beatsPerMin < 50 ? 50 : beatsPerMin : 10000;
-            const beat = viber == 1 ? 155 : 2 ? 155 : 100;
+
+            var beat;
+            switch (viber) {
+                case config.ViberType.BoyViber:
+                    beat = 155;
+                    break;
+                case config.ViberType.BoyJammer:
+                    beat = 155;
+                    break;
+                default:
+                    beat = 100;
+            }
+
             await changeVideoBPM(backgroundViber, tempVideoPath, beat, bpm, duration);
         }
         const ffmpegProcess = ffmpeg()

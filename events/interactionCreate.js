@@ -38,7 +38,7 @@ client.on("interactionCreate", async (interaction) => {
         }
       }
     } else {
-      await interaction.deferReply({ ephemeral: false }).catch((e) => { });
+      await interaction.deferReply({ ephemeral: false }).catch(/* GRACEFAIL */);
       const cmd = client.commands.get(cmdName);
       if (!cmd) {
         return client.embed(
@@ -70,7 +70,7 @@ client.on("interactionCreate", async (interaction) => {
     }
   }
   if (interaction.isContextMenuCommand()) {
-    await interaction.deferReply({ ephemeral: true }).catch((e) => { });
+    await interaction.deferReply({ ephemeral: true }).catch(/* GRACEFAIL */);
     const command = client.commands.get(interaction.commandName);
     if (command) command.run(client, interaction);
   }

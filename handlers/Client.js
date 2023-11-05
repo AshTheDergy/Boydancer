@@ -76,7 +76,7 @@ class PH extends Client {
               .setFooter(this.getFooter(user)),
           ],
         })
-        .catch((e) => { });
+        .catch(/* GRACEFAIL */);
     } else {
       interaction
         .reply({
@@ -87,7 +87,7 @@ class PH extends Client {
               .setFooter(this.getFooter(user)),
           ],
         })
-        .catch((e) => { });
+        .catch(/* GRACEFAIL */);
     }
   }
 }

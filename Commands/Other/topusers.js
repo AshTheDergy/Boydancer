@@ -1,5 +1,10 @@
-const { CommandInteraction, EmbedBuilder } = require("discord.js");
-const PH = require("../../handlers/Client");
+// Typedef
+/**
+ * @typedef {import('../../handlers/Client')} PH
+ * @typedef {import("discord.js").CommandInteraction} CommandInteraction 
+ */
+
+const { EmbedBuilder } = require("discord.js");
 
 module.exports = {
     name: "topusers",

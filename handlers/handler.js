@@ -1,9 +1,13 @@
+// Typedef
+/**
+ * @typedef {import('../../handlers/Client')} PH
+ */
+
+// Imports
 const { readdirSync } = require("fs");
 const { ApplicationCommandType, ApplicationCommandOptionType } = require("discord.js");
-const PH = require("./Client");
 
 /**
- *
  * @param {PH} client
  */
 module.exports = async (client) => {

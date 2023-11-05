@@ -1,3 +1,4 @@
+/* eslint-disable no-async-promise-executor */
 const fs = require('fs');
 const util = require('util');
 const { giveSecondsFromTime, cooldownUser, applyAudioWithDelay } = require("./CommonFunctions");

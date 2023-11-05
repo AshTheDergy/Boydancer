@@ -1,12 +1,13 @@
 require('dotenv').config();
 module.exports = {
     news: {
-        version: '2.0 Beta 1',
+        version: '2.0',
         new: [
             '- Easier to maintain and fix',
             '- Spelling Fixes',
             '- More Customization of the Bot itself',
             '- New Viber: Boysinger (99 bpm)',
+            '- Better Error Handling and Restrictions'
         ],
     },
     TOKEN: process.env.TOKEN,
@@ -77,5 +78,9 @@ module.exports = {
         cooldown: "You are On Cooldown, wait `%s` Seconds",
         description: "Apply audio to the boykisser dancing video. Maximum of 120 seconds",
         random_invalid_replies: [`Ha Ha very funny. "lem e putt .gsgl gggmgm as jok" :nerd::nerd::nerd:`, `No...`, `Kindly deactivate yourself :blush:`, `Mods, crush his skull`, `I'm gonna fuck your mother`, `hey buddy. we're going to kill you and leave you laid out in a dumpster to rot`, `https://cdn.discordapp.com/attachments/873603423998705718/1145258850132443206/8apAlKE.gif`, `https://cdn.discordapp.com/attachments/873603423998705718/1145258963676430346/cqtykgb.gif`, `https://cdn.discordapp.com/attachments/873603423998705718/1145985376515788800/pjSHLOr.png`],
+    },
+    ViberType: {
+        BoyViber: 1,
+        BoyJammer: 2
     }
 };

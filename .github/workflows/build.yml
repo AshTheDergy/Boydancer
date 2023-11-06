@@ -21,7 +21,6 @@ jobs:
         with:
           args: >
             -Dsonar.projectKey=PeterStrick_Boydancer_AYumQrGxcC7oaSjuHHBf
-            -Dsonar.verbose=true
 
       # If you wish to fail your job when the Quality Gate is red, uncomment the
       # following lines. This would typically be used to fail a deployment.

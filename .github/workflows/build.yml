@@ -1,14 +1,13 @@
-name: Build
+name: SonarQube
 
 on:
   push:
     branches:
       - main
 
-
 jobs:
-  build:
-    name: Build
+  scan:
+    name: SonarQube Scan
     runs-on: ubuntu-latest
     permissions: read-all
     steps:
@@ -19,6 +18,11 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        with:
+          args: >
+            -Dsonar.projectKey=PeterStrick_Boydancer_AYumQrGxcC7oaSjuHHBf
+            -Dsonar.verbose=true
+
       # If you wish to fail your job when the Quality Gate is red, uncomment the
       # following lines. This would typically be used to fail a deployment.
       # - uses: sonarsource/sonarqube-quality-gate-action@master

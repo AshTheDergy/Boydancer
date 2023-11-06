@@ -22,6 +22,8 @@
     "ytdl-core": "^4.11.5"
   },
   "devDependencies": {
-    "eslint": "^8.53.0"
+    "eslint": "^8.53.0",
+    "eslint-plugin-promise": "^6.1.1",
+    "eslint-plugin-sonarjs": "^0.23.0"
   }
 }

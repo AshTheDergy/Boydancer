@@ -5,10 +5,10 @@
         "es2021": true,
         "node": true
     },
-    "extends": "eslint:recommended",
+    "extends": ["eslint:recommended", "plugin:promise/recommended", "plugin:sonarjs/recommended"],
     "parserOptions": {
         "ecmaVersion": "latest"
     },
-    "rules": {
-    }
+    "rules": {},
+    "plugins": ["promise", "sonarjs"]
 }

@@ -80,7 +80,7 @@ module.exports = {
         random_invalid_replies: [`Ha Ha very funny. "lem e putt .gsgl gggmgm as jok" :nerd::nerd::nerd:`, `No...`, `Kindly deactivate yourself :blush:`, `Mods, crush his skull`, `I'm gonna fuck your mother`, `hey buddy. we're going to kill you and leave you laid out in a dumpster to rot`, `https://cdn.discordapp.com/attachments/873603423998705718/1145258850132443206/8apAlKE.gif`, `https://cdn.discordapp.com/attachments/873603423998705718/1145258963676430346/cqtykgb.gif`, `https://cdn.discordapp.com/attachments/873603423998705718/1145985376515788800/pjSHLOr.png`],
     },
     ViberType: {
-        BoyViber: 1,
+        BoyDancer: 1,
         BoyJammer: 2
     }
 };

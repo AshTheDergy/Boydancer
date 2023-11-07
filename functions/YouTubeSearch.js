@@ -1,7 +1,7 @@
 /* eslint-disable no-async-promise-executor */
 const fs = require('fs');
 const util = require('util');
-const { giveSecondsFromTime, cooldownUser, applyAudioWithDelay } = require("./CommonFunctions");
+const { giveSecondsFromTime, cooldownUser, applyAudioWithDelay, getFinalFileName } = require("./CommonFunctions");
 const { downloadYoutubeVideo } = require("./YouTube");
 const yts = require('yt-search');
 const config = require("../settings/config");
@@ -9,9 +9,10 @@ const config = require("../settings/config");
 //search functions
 
 async function findVideoUrl(title) {
-    return new Promise(async (resolve, reject) => {
+    const r = await yts(title);
+
+    return new Promise((resolve, reject) => {
         try {
-            const r = await yts(title);
             const firstResult = r.videos[0];
 
             if (!firstResult) {
@@ -33,8 +34,8 @@ async function handleSearch(client, interaction, searchTitle, cooldowns) {
     const author = interaction.user.id;
 
     // Timing
-    var danceStart = 0;
-    var danceEnd = config.whitelisted.includes(author) ? config.danceEnd_Premium : config.danceEnd_Normal;
+    let danceStart = 0;
+    let danceEnd = config.whitelisted.includes(author) ? config.danceEnd_Premium : config.danceEnd_Normal;
     const maxInput = config.whitelisted.includes(author) ? config.maxInput_Premium : config.maxInput_Normal;
     const startTime = interaction.options.getString("start");
     const endTime = interaction.options.getString("end");
@@ -47,7 +48,7 @@ async function handleSearch(client, interaction, searchTitle, cooldowns) {
     const tempVideoPath = `./files/otherTemp/${author}.mp4`;
 
     // Strings
-    const finalFileName = viber == 1 ? `Boydancer` : viber == 2 ? `Boyviber` : `gaysex`;
+    const finalFileName = getFinalFileName(viber);
     const finalMessage = `${interaction.user}${beatsPerMin > 225 && viber == 1 ? config.strings.epilepsy : '\n'}${config.strings.finished}`;
 
     // Usage / Leaderboard
@@ -85,7 +86,6 @@ async function handleSearch(client, interaction, searchTitle, cooldowns) {
                     cooldownUser(cooldowns, interaction, 10);
                     return;
                 } else if (start === 0 && end) {
-                    danceStart = 0;
                     danceEnd = end;
                 } else if (start && end) {
                     danceStart = start;

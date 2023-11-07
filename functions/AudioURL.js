@@ -1,6 +1,6 @@
 const fs = require('fs');
 const util = require('util');
-const { giveSecondsFromTime, cooldownUser, applyAudioWithDelay, getVideoDuration } = require("./CommonFunctions");
+const { giveSecondsFromTime, cooldownUser, applyAudioWithDelay, getVideoDuration, getFinalFileName } = require("./CommonFunctions");
 const config = require("../settings/config");
 
 async function handleURL(client, interaction, audioUrl, cooldowns) {
@@ -23,7 +23,7 @@ async function handleURL(client, interaction, audioUrl, cooldowns) {
     const tempVideoPath = `./files/otherTemp/${author}.mp4`;
 
     // Strings
-    const finalFileName = viber == 1 ? `Boydancer` : viber == 2 ? `Boyviber` : `gaysex`;
+    const finalFileName = getFinalFileName(viber);
     const finalMessage = `${interaction.user}${beatsPerMin > 225 && viber == 1 ? config.strings.epilepsy : '\n'}${config.strings.finished}`;
 
     // Usage / Leaderboard
@@ -51,7 +51,6 @@ async function handleURL(client, interaction, audioUrl, cooldowns) {
             cooldownUser(cooldowns, interaction, 10);
             return;
         } else if (start === 0 && end) {
-            danceStart = 0;
             danceEnd = end;
         } else if (start && end) {
             danceStart = start;

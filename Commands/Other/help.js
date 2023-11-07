@@ -38,7 +38,7 @@ module.exports = {
         let supporters = [];
         const data = await client.premium.values;
         for (const key in data) {
-            if (Object.prototype.hasOwnProperty.call(data, key)) {
+            if (Object.hasOwn(data, key)) {
                 const user = data[key];
                 const userString = `${user.name} (<@${user.userId}>)`;
                 supporters.push(userString);

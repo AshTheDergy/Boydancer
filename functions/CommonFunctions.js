@@ -19,7 +19,8 @@ async function getVideoDuration(interaction, videoUrl) {
                 reject(err);
                 return;
             }
-            if (metadata && metadata.format && metadata.format.duration) {
+            // if (metadata && metadata.format && metadata.format.duration) {
+            if (metadata?.format?.duration) {
                 const totalDurationInSeconds = parseFloat(metadata.format.duration);
                 resolve(totalDurationInSeconds.toFixed(1));
 
@@ -40,7 +41,7 @@ function cooldownUser(cooldown_map, interaction, time) {
 
 function giveSecondsFromTime(author, input) {
     const maxMinute = config.whitelisted.includes(author) ? config.maxMinute_Premium : config.maxMinute_Normal;
-    const timePattern = /^(0?[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/;
+    const timePattern = /^(0?[\d]|1[\d]|2[0-3]):[0-5][\d]$/;
     const [minutes, seconds] = input.split(":").map(Number);
     if (!timePattern.test(input)) {
         return false;
@@ -75,7 +76,7 @@ async function applyAudioToVideoFILE(interaction, file, start, end, danceEnd) {
     // Speed
     const selectedSpeed = interaction.options.getInteger("speed");
     const beatsPerMin = interaction.options.getInteger("bpm");
-    const audioSpeed = selectedSpeed ? selectedSpeed : 100;
+    const audioSpeed = selectedSpeed || 100;
     const normalizedAudioSpeed = Math.min(200, Math.max(50, audioSpeed));
 
     // Duration
@@ -90,24 +91,16 @@ async function applyAudioToVideoFILE(interaction, file, start, end, danceEnd) {
     const tempVideoPath = `./files/otherTemp/${interaction.user.id}.mp4`;
     const outputVideoPath = `./files/temporaryFinalVideo/${interaction.user.id}.mp4`;
 
-    return new Promise(async (resolve, reject) => {
-        if (beatsPerMin) {
-            const bpm = beatsPerMin ? beatsPerMin > 500 ? 500 : beatsPerMin < 50 ? 50 : beatsPerMin : 10000;
+    // Apply BPM Change if specified
+    if (beatsPerMin) {
+        // const bpm = beatsPerMin ? beatsPerMin > 500 ? 500 : beatsPerMin < 50 ? 50 : beatsPerMin : 10000;
+        const bpm = getBeatsPerMin(beatsPerMin);
+        let beat = getViberBPM(viber);
 
-            var beat;
-            switch (viber) {
-                case config.ViberType.BoyViber:
-                    beat = 155;
-                    break;
-                case config.ViberType.BoyJammer:
-                    beat = 155;
-                    break;
-                default:
-                    beat = 100;
-            }
+        await changeVideoBPM(backgroundViber, tempVideoPath, beat, bpm, duration);
+    }
 
-            await changeVideoBPM(backgroundViber, tempVideoPath, beat, bpm, duration);
-        }
+    return new Promise((resolve, reject) => {
         const ffmpegProcess = ffmpeg()
             .input(beatsPerMin ? tempVideoPath : backgroundViber)
             .inputOptions(['-ss 0'])
@@ -143,4 +136,52 @@ async function applyAudioWithDelay(interaction, file, start, end, delay, danceEn
     await applyAudioToVideoFILE(interaction, file, start, end, danceEnd);
 }
 
-module.exports = { cooldownUser, giveSecondsFromTime, applyAudioWithDelay, getVideoDuration };
+function getFinalFileName(viber) {
+    switch (viber) {
+        case config.ViberType.BoyDancer:
+            return "Boydancer";
+        case config.ViberType.BoyJammer:
+            return "Boyviber";
+        default:
+            return "gaysex";
+    }
+}
+
+function getViberBPM(viber) {
+    switch (viber) {
+        case config.ViberType.BoyDancer:
+            return 155;
+        case config.ViberType.BoyJammer:
+            return 155;
+        default:
+            return 100;
+    }
+}
+
+function getBeatsPerMin(beatsPerMin) {
+    // const bpm = beatsPerMin ? beatsPerMin > 500 ? 500 : beatsPerMin < 50 ? 50 : beatsPerMin : 10000;
+    //
+    // beatsPerMin ? 
+    //      beatsPerMin > 500 ? 
+    //          500 
+    //      : beatsPerMin < 50 ? 
+    //          50 
+    //      : beatsPerMin
+    // : 10000;
+    //
+
+    if (beatsPerMin) {
+        switch (beatsPerMin) {
+            case beatsPerMin > 500:
+                return 500;
+            case beatsPerMin < 50:
+                return 50;
+            default:
+                return beatsPerMin;
+        }
+    } else {
+        return 10000;
+    }
+}
+
+module.exports = { cooldownUser, giveSecondsFromTime, applyAudioWithDelay, getVideoDuration, getFinalFileName };

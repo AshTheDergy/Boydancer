@@ -1,6 +1,6 @@
 const fs = require('fs');
 const util = require('util');
-const { giveSecondsFromTime, cooldownUser, applyAudioWithDelay, getVideoDuration } = require("./CommonFunctions");
+const { giveSecondsFromTime, cooldownUser, applyAudioWithDelay, getVideoDuration, getFinalFileName } = require("./CommonFunctions");
 const config = require("../settings/config");
 
 async function handleFile(client, interaction, audioFile, cooldowns) {
@@ -23,7 +23,7 @@ async function handleFile(client, interaction, audioFile, cooldowns) {
     const tempVideoPath = `./files/otherTemp/${author}.mp4`;
 
     // Strings
-    const finalFileName = viber == 1 ? `Boydancer` : viber == 2 ? `Boyviber` : `gaysex`;
+    const finalFileName = getFinalFileName(viber);
     const finalMessage = `${interaction.user}${beatsPerMin > 225 && viber == 1 ? config.strings.epilepsy : '\n'}${config.strings.finished}`;
 
     // Usage / Leaderboard
@@ -37,7 +37,6 @@ async function handleFile(client, interaction, audioFile, cooldowns) {
     if (audioFile.size >= 50000000) {
         interaction.editReply({ content: util.format(config.strings.error.file_too_big, config.emoji.error) });
         cooldownUser(cooldowns, interaction, 10);
-        return;
     } else if (!config.correctFile.some(extension => fileName.endsWith(extension))) {
         interaction.editReply({ content: util.format(config.strings.error.invalid_file, config.emoji.error) });
         cooldownUser(cooldowns, interaction, 10);
@@ -64,7 +63,6 @@ async function handleFile(client, interaction, audioFile, cooldowns) {
                 cooldownUser(cooldowns, interaction, 10);
                 return;
             } else if (start === 0 && end) {
-                danceStart = 0;
                 danceEnd = end;
             } else if (start && end) {
                 danceStart = start;

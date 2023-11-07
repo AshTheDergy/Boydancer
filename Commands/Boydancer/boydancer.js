@@ -128,7 +128,7 @@ module.exports = {
         const whiteListed = config.whitelisted;
         const data = await client.premium.values;
         for (const key in data) {
-            if (Object.prototype.hasOwnProperty.call(data, key)) {
+            if (Object.hasOwn(data, key)) {
                 whiteListed.push(`${data[key].userId}`);
             }
         }
@@ -146,7 +146,6 @@ module.exports = {
         if (cooldown && !whiteListed.includes(author)) {
             const remaining = humanizeDuration(cooldown - Date.now(), { units: ['m', 's'], round: true });
             interaction.reply({ content: util.format(config.strings.cooldown, remaining), ephemeral: true });
-            return;
         } else if (!audioUrl && !audioFile && !searchTitle) {
             interaction.reply({ content: util.format(config.strings.error.invalid_everything, config.emoji.error), ephemeral: true });
             cooldownUser(cooldowns, interaction, 10);

@@ -1,6 +1,6 @@
 const fs = require('fs');
 const util = require('util');
-const { giveSecondsFromTime, cooldownUser, applyAudioWithDelay } = require("./CommonFunctions");
+const { giveSecondsFromTime, cooldownUser, applyAudioWithDelay, getFinalFileName } = require("./CommonFunctions");
 const ytdl = require('ytdl-core');
 const config = require("../settings/config");
 
@@ -9,7 +9,7 @@ const config = require("../settings/config");
 function isYoutubeLink(videoUrl) {
     const patterns = [
         /(?:https?:\/\/)?(?:www\.)?youtu\.?be(?:\.com)?\/(?:watch\?v=)?([a-zA-Z0-9_-]{11})/,
-        /(?:https?:\/\/)?(?:www\.)?youtube\.com\/(?:watch\?v=)?[a-zA-Z0-9_-]+&?(?:t=[0-9]+m[0-9]+s)?/,
+        /(?:https?:\/\/)?(?:www\.)?youtube\.com\/(?:watch\?v=)?[a-zA-Z0-9_-]+&?(?:t=[\d]+m[\d]+s)?/,
         /(?:https?:\/\/)?(?:www\.)?youtube\.com\/(?:shorts\/)?[a-zA-Z0-9_-]+/,
     ];
 
@@ -28,8 +28,7 @@ function isWorkingLink_Youtube(videoUrl) {
 async function checkYoutubeVideoLength(videoUrl) {
     try {
         const info = await ytdl.getBasicInfo(videoUrl);
-        const length = info.videoDetails.lengthSeconds;
-        return length;
+        return info.videoDetails.lengthSeconds;
     } catch (error) {
         console.error(error);
         return false;
@@ -55,8 +54,8 @@ async function handleYouTube(client, interaction, audioUrl, cooldowns) {
     const author = interaction.user.id;
 
     // Timing
-    var danceStart = 0;
-    var danceEnd = config.whitelisted.includes(author) ? config.danceEnd_Premium : config.danceEnd_Normal;
+    let danceStart = 0;
+    let danceEnd = config.whitelisted.includes(author) ? config.danceEnd_Premium : config.danceEnd_Normal;
     const maxInput = config.whitelisted.includes(author) ? config.maxInput_Premium : config.maxInput_Normal;
     const startTime = interaction.options.getString("start");
     const endTime = interaction.options.getString("end");
@@ -69,7 +68,7 @@ async function handleYouTube(client, interaction, audioUrl, cooldowns) {
     const tempVideoPath = `./files/otherTemp/${author}.mp4`;
 
     // Strings
-    const finalFileName = viber == 1 ? `Boydancer` : viber == 2 ? `Boyviber` : `gaysex`;
+    const finalFileName = getFinalFileName(viber);
     const finalMessage = `${interaction.user}${beatsPerMin > 225 && viber == 1 ? config.strings.epilepsy : '\n'}${config.strings.finished}`;
 
     // Usage / Leaderboard
@@ -80,7 +79,6 @@ async function handleYouTube(client, interaction, audioUrl, cooldowns) {
     if (length == "0") {
         interaction.editReply({ content: config.strings.error.youtube_is_livestream }); //kys
         cooldownUser(cooldowns, interaction, 10);
-        return;
     } else if (length > maxInput) {
         interaction.editReply({ content: util.format(config.strings.error.youtube_too_long, config.emoji.error) });
         cooldownUser(cooldowns, interaction, 10);
@@ -106,7 +104,6 @@ async function handleYouTube(client, interaction, audioUrl, cooldowns) {
                 cooldownUser(cooldowns, interaction, 10);
                 return;
             } else if (start === 0 && end) {
-                danceStart = 0;
                 danceEnd = end;
             } else if (start && end) {
                 danceStart = start;

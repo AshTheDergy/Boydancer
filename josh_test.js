@@ -7,11 +7,12 @@ const interaction_db = new Josh({
 });
 
 (async () => {
-    // await interaction_db.set("test data");
+    console.log("Setting")
+    await interaction_db.set("test data");
+    console.log(await interaction_db.has("test data"));
+
+    console.log("Deleting")
     await interaction_db.delete("test data");
-
-    // console.log(await interaction_db.get("test data"));
-
     console.log(await interaction_db.has("test data"));
 
     // Usage to set a Discord User ID:

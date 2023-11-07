@@ -16,8 +16,7 @@ function cooldown(interaction, cmd) {
   if (timestamps.has(member.id)) {
     const expirationTime = timestamps.get(member.id) + cooldownAmount;
     if (now < expirationTime) {
-      const timeLeft = (expirationTime - now) / 1000;
-      return timeLeft;
+      return (expirationTime - now) / 1000;
     } else {
       timestamps.set(member.id, now);
       setTimeout(() => timestamps.delete(member.id), cooldownAmount);

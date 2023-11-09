@@ -151,7 +151,7 @@ module.exports = {
             cooldownUser(cooldowns, interaction, 10);
             return;
         } else if (audioUrl && !audioFile && !searchTitle) {
-            if (!audioUrl.toLowerCase().startsWith("https://") || !audioUrl.toLowerCase().startsWith("http://")) {
+            if (!audioUrl.toLowerCase().startsWith("https://")) {
                 interaction.reply({ content: util.format(config.strings.error.invalid_link_http, config.emoji.error), ephemeral: true });
                 cooldownUser(cooldowns, interaction, 10);
                 return;

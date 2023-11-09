@@ -186,4 +186,4 @@ async function handleYouTube(client, interaction, audioUrl, cooldowns) {
     }
 }
 
-module.exports = { handleYouTube, isWorkingLink_Youtube, isYoutubeLink, downloadYoutubeVideo };
+module.exports = { handleYouTube, isWorkingLink_Youtube, isYoutubeLink, downloadYoutubeVideo, checkYoutubeVideoLength };

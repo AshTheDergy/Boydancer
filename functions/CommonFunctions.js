@@ -41,7 +41,7 @@ function cooldownUser(cooldown_map, interaction, time) {
 
 function giveSecondsFromTime(author, input) {
     const maxMinute = config.whitelisted.includes(author) ? config.maxMinute_Premium : config.maxMinute_Normal;
-    const timePattern = /^(0?[\d]|1[\d]|2[0-3]):[0-5][\d]$/;
+    const timePattern = /^(0?\d|1\d|2[0-3]):[0-5]\d$/;
     const [minutes, seconds] = input.split(":").map(Number);
     if (!timePattern.test(input)) {
         return false;
@@ -93,7 +93,6 @@ async function applyAudioToVideoFILE(interaction, file, start, end, danceEnd) {
 
     // Apply BPM Change if specified
     if (beatsPerMin) {
-        // const bpm = beatsPerMin ? beatsPerMin > 500 ? 500 : beatsPerMin < 50 ? 50 : beatsPerMin : 10000;
         const bpm = getBeatsPerMin(beatsPerMin);
         let beat = getViberBPM(viber);
 
@@ -159,29 +158,12 @@ function getViberBPM(viber) {
 }
 
 function getBeatsPerMin(beatsPerMin) {
-    // const bpm = beatsPerMin ? beatsPerMin > 500 ? 500 : beatsPerMin < 50 ? 50 : beatsPerMin : 10000;
-    //
-    // beatsPerMin ? 
-    //      beatsPerMin > 500 ? 
-    //          500 
-    //      : beatsPerMin < 50 ? 
-    //          50 
-    //      : beatsPerMin
-    // : 10000;
-    //
+    // Old Code: return beatsPerMin ? beatsPerMin > 500 ? 500 : beatsPerMin < 50 ? 50 : beatsPerMin : 10000;
 
-    if (beatsPerMin) {
-        switch (beatsPerMin) {
-            case beatsPerMin > 500:
-                return 500;
-            case beatsPerMin < 50:
-                return 50;
-            default:
-                return beatsPerMin;
-        }
-    } else {
-        return 10000;
-    }
+    if (!beatsPerMin) return 10000;
+    if (beatsPerMin > 500) return 500;
+    if (beatsPerMin < 50) return 50;
+    return beatsPerMin;
 }
 
 module.exports = { cooldownUser, giveSecondsFromTime, applyAudioWithDelay, getVideoDuration, getFinalFileName };

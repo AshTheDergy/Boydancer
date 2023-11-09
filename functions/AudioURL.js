@@ -11,8 +11,8 @@ async function handleURL(client, interaction, audioUrl, cooldowns) {
     const author = interaction.user.id;
 
     // Timing
-    var danceStart = 0;
-    var danceEnd = config.whitelisted.includes(author) ? config.danceEnd_Premium : config.danceEnd_Normal;
+    let danceStart = 0;
+    let danceEnd = config.whitelisted.includes(author) ? config.danceEnd_Premium : config.danceEnd_Normal;
     const startTime = interaction.options.getString("start");
     const endTime = interaction.options.getString("end");
     const beatsPerMin = interaction.options.getInteger("bpm");

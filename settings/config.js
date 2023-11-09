@@ -54,6 +54,7 @@ module.exports = {
             invalid_everything: "%s - ** Please provide a __Link__ or __File__ (use `/help boydancer` for more information) **",
             invalid_link: "%s - ** Please provide a supported link (supported are __Youtube__ __SoundCloud__ and __Audio/Video__ links (use `/help boydancer` for more information) **",
             invalid_link_soundcloud: "%s - ** The __SoundCloud Link__ you provided does not exist. __Shortened Links__ also don't work **",
+            invalid_link_http: "%s - ** The provided Audio URL must start either with `https://` or `http://` **",
             invalid_file: "%s - Please use a correct File (use `/help boydancer` for more information)",
             time_over_danceEnd_limit: "%s - ** The time between __START__ and __END__ is over `%s` seconds **",
             time_too_big: "%s - ** Please ensure your __START__ and/or __END__ times are shorter than the video's duration **",

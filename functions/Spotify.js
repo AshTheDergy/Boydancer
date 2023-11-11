@@ -1,13 +1,15 @@
 const fs = require('fs');
 const util = require('util');
-const { giveSecondsFromTime, cooldownUser, applyAudioWithDelay, getFinalFileName } = require("./CommonFunctions");
-const scdl = require('soundcloud-downloader').default;
+const { giveSecondsFromTime, cooldownUser, applyAudioWithDelay, getFinalFileName, getVideoDuration } = require("./CommonFunctions");
+const { execSync } = require('child_process');
 const config = require("../settings/config");
 
-// SoundCloud functions
-function isSoundCloudLink(url) {
+// Spotify functions
+function isSpotifyLink(url) {
     const patterns = [
-        /^https?:\/\/(soundcloud\.com)\/(.*)$/,
+        // /^https?:\/\/(open\.spotify\.com)\/(.*)$/,
+        // /(https?:\/\/open.spotify.com\/(track|user|artist|album)\/[a-zA-Z0-9]+(\/playlist\/[a-zA-Z0-9]+|)|spotify:(track|user|artist|album):[a-zA-Z0-9]+(:playlist:[a-zA-Z0-9]+|))/,
+        /(https?:\/\/open.spotify.com\/(track)\/[a-zA-Z0-9]+)/,
     ];
 
     for (const pattern of patterns) {
@@ -18,31 +20,33 @@ function isSoundCloudLink(url) {
     return false;
 }
 
-function isWorkingLink_SoundCloud(Url) {
-    return scdl.isValidUrl(Url);
-}
-
-async function checkSoundCloudLength(Url) {
-    try {
-        const json = await scdl.getInfo(Url);
-        return Math.floor(json.full_duration / 1000);
-    } catch (error) {
-        console.error(error);
-        return;
-    }
-}
-
-async function downloadSoundCloud(interaction, audioUrl) {
+async function downloadSpotify(interaction, audioUrl) {
     // Files
     const author = interaction.user.id;
-    const tempSoundCloudPath = `./files/temporarySoundCloud/${author}.wav`;
-    const outputPath = tempSoundCloudPath;
+    const SpotifyTemp = `./files/spotify_temp_files/`;
+    const SpotifyPath = `./files/temporarySpotify/`;
+    const outputPath = SpotifyPath;
 
-    const fileStream = fs.createWriteStream(outputPath);
-    scdl.downloadFormat(audioUrl, "audio/mpeg").then(stream => stream.pipe(fileStream)).catch(err => console.error('Error:', err));
+    // Node.JS Error Handling suggested by Wroclaw. Yes this is garbage, but working garbage
+    const callback = (reason) => {
+        if (!interaction.replied) {
+            interaction.editReply(util.format(config.strings.error.video_generation_detailed, reason.message));
+        }
+    };
+
+    // Set Error Handler
+    process.on('unhandledRejection', callback);
+
+    const child = execSync(`${config.Spotify.executable} -f ${outputPath} -t ${SpotifyTemp} -c ${config.Spotify.cookies} -w ${config.Spotify.widevine_device} --ffmpeg-location ${config.Spotify.ffmpeg} --no-lrc --template-folder-album "" --template-file-single-disc ${author} --template-file-multi-disc ${author} ${audioUrl}`);
+    
+    // Remove Error Handler after it isn't needed anymore
+    process.removeListener('unhandledRejection', callback);
+
+    // convert and show the output.
+    console.log(child.toString("utf8"));
 }
 
-async function handleSoundCloud(client, interaction, audioUrl, cooldowns) {
+async function handleSpotify(client, interaction, audioUrl, cooldowns) {
     // Defer Reply
     await interaction.deferReply();
 
@@ -60,7 +64,8 @@ async function handleSoundCloud(client, interaction, audioUrl, cooldowns) {
     // Files
     const viber = interaction.options.getInteger("viber");
     const outputVideoPath = `./files/temporaryFinalVideo/${author}.mp4`;
-    const tempSoundCloudPath = `./files/temporarySoundCloud/${author}.wav`;
+    const tempYoutubePath = `./files/temporaryYoutube/${author}.wav`;
+    const tempSpotifyPath = `./files/temporarySpotify/${author}.m4a`;
     const tempVideoPath = `./files/otherTemp/${author}.mp4`;
 
     // Strings
@@ -71,9 +76,12 @@ async function handleSoundCloud(client, interaction, audioUrl, cooldowns) {
     let used = await client.usage.get(`${interaction.guildId}.${author}`);
     const usedSuccessful = used?.successful;
 
-    const length = await checkSoundCloudLength(audioUrl);
+    // Download
+    await downloadSpotify(interaction, audioUrl);
+
+    const length = await getVideoDuration(interaction, tempSpotifyPath);
     if (length > maxInput) {
-        interaction.editReply({ content: util.format(config.strings.error.soundcloud_song_too_big, config.emoji.error) });
+        interaction.editReply({ content: util.format(config.strings.error.spotify_song_too_big, config.emoji.error) });
         cooldownUser(cooldowns, interaction, 10);
     } else {
         if (startTime && endTime) {
@@ -147,17 +155,16 @@ async function handleSoundCloud(client, interaction, audioUrl, cooldowns) {
         }
 
         await interaction.editReply({ content: config.strings.generation });
-        await downloadSoundCloud(interaction, audioUrl);
         cooldownUser(cooldowns, interaction, 5);
 
         // Tell the DB that the current User has started an Interaction
         await client.interaction_db.set(author);
         
         try {
-            await applyAudioWithDelay(interaction, tempSoundCloudPath, danceStart, length < danceEnd ? length : danceEnd, 5000, danceEnd);
+            await applyAudioWithDelay(interaction, tempSpotifyPath, danceStart, length < danceEnd ? length : danceEnd, 5000, danceEnd);
             await interaction.editReply({ content: finalMessage, files: [{ attachment: outputVideoPath, name: `${finalFileName}.mp4` }] });
             fs.unlinkSync(outputVideoPath);
-            fs.unlinkSync(tempSoundCloudPath);
+            fs.unlinkSync(tempSpotifyPath);
             cooldownUser(cooldowns, interaction, 60);
             await client.usage.set(`${interaction.guildId}.${author}.successful`, usedSuccessful ? usedSuccessful + 1 : 1);
 
@@ -167,7 +174,7 @@ async function handleSoundCloud(client, interaction, audioUrl, cooldowns) {
             console.error(config.strings.error.video_generation, error);
             interaction.followUp(util.format(config.strings.error.video_generation_detailed, error));
             cooldownUser(cooldowns, interaction, 10);
-            fs.unlinkSync(tempSoundCloudPath);
+            fs.unlinkSync(tempSpotifyPath);
             if (beatsPerMin) {
                 fs.unlinkSync(tempVideoPath);
             }
@@ -178,4 +185,4 @@ async function handleSoundCloud(client, interaction, audioUrl, cooldowns) {
     }
 }
 
-module.exports = { handleSoundCloud, isWorkingLink_SoundCloud, isSoundCloudLink };
+module.exports = { handleSpotify, isSpotifyLink };

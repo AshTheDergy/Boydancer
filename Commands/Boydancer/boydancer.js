@@ -19,6 +19,7 @@ const { isWorkingLink_Youtube, isYoutubeLink, handleYouTube } = require("../../f
 const { handleURL } = require("../../functions/AudioURL");
 const { handleFile } = require('../../functions/AudioFile');
 const { handleSearch } = require('../../functions/YouTubeSearch');
+const { handleSpotify, isSpotifyLink } = require('../../functions/Spotify');
 
 module.exports = {
     name: "boydancer",
@@ -171,6 +172,8 @@ module.exports = {
                     cooldownUser(cooldowns, interaction, 10);
                     return;
                 }
+            } else if (isSpotifyLink(audioUrl)) {
+                handleSpotify(client, interaction, audioUrl, cooldowns);
             } else if (correctFile.some(extension => audioUrl.endsWith(extension))) {
                 handleURL(client, interaction, audioUrl, cooldowns);
             } else {

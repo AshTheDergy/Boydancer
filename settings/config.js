@@ -1,13 +1,9 @@
 require('dotenv').config();
 module.exports = {
     news: {
-        version: '2.0',
+        version: '2.1',
         new: [
-            '- Easier to maintain and fix',
-            '- Spelling Fixes',
-            '- More Customization of the Bot itself',
-            '- New Viber: Boysinger (99 bpm)',
-            '- Better Error Handling and Restrictions'
+            '- Spotify Support'
         ],
     },
     TOKEN: process.env.TOKEN,
@@ -68,6 +64,7 @@ module.exports = {
             starttime_incorrect: "%s - ** Please insert a correct __START__ time **",
             file_too_big: "%s - The File you provided is over __50 MB__",
             soundcloud_song_too_big: "%s - ** Please ensure that the __SoundCloud Song__ is __10 minutes (600 seconds)__ or shorter **",
+            spotify_song_too_big: "%s - ** Please ensure that the __Spotify Song__ is __10 minutes (600 seconds)__ or shorter **",
             youtube_is_livestream: ":blush: ** **- ** Please ensure the __Youtube Video__ is not a __Livestream__ **",
             youtube_too_long: "%s - ** Please ensure that the __YouTube Video__ is __10 minutes (600 seconds)__ or shorter **",
             youtube_video_does_not_exist: "%s - ** The __Youtube Video__ you provided Does Not Exist **",
@@ -83,5 +80,11 @@ module.exports = {
     ViberType: {
         BoyDancer: 1,
         BoyJammer: 2
+    },
+    Spotify: {
+        executable: process.env.SPOTIFY_AAC_EXECUTABLE,
+        cookies: process.env.SPOTIFY_COOKIES,
+        widevine_device: process.env.WIDEVINE_DEVICE_FILE,
+        ffmpeg: process.env.FFMPEG_EXECUTABLE
     }
 };

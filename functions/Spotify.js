@@ -37,8 +37,19 @@ async function downloadSpotify(interaction, audioUrl) {
     // Set Error Handler
     process.on('unhandledRejection', callback);
 
-    const child = execSync(`${config.Spotify.executable} -f ${outputPath} -t ${SpotifyTemp} -c ${config.Spotify.cookies} -w ${config.Spotify.widevine_device} --ffmpeg-location ${config.Spotify.ffmpeg} --no-lrc --template-folder-album "" --template-file-single-disc ${author} --template-file-multi-disc ${author} ${audioUrl}`);
-    
+    const child = execSync([
+        config.Spotify.executable,
+        "-f", outputPath,
+        "-t", SpotifyTemp,
+        "-c", config.Spotify.cookies,
+        "-w", config.Spotify.widevine_device,
+        "--ffmpeg-location", config.Spotify.ffmpeg,
+        `--no-lrc --template-folder-album ""`,
+        "--template-file-single-disc", author,
+        "--template-file-multi-disc", author,
+        audioUrl,
+    ].join(" "), { shell: false });
+
     // Remove Error Handler after it isn't needed anymore
     process.removeListener('unhandledRejection', callback);
 
@@ -64,7 +75,6 @@ async function handleSpotify(client, interaction, audioUrl, cooldowns) {
     // Files
     const viber = interaction.options.getInteger("viber");
     const outputVideoPath = `./files/temporaryFinalVideo/${author}.mp4`;
-    const tempYoutubePath = `./files/temporaryYoutube/${author}.wav`;
     const tempSpotifyPath = `./files/temporarySpotify/${author}.m4a`;
     const tempVideoPath = `./files/otherTemp/${author}.mp4`;
 
@@ -159,7 +169,7 @@ async function handleSpotify(client, interaction, audioUrl, cooldowns) {
 
         // Tell the DB that the current User has started an Interaction
         await client.interaction_db.set(author);
-        
+
         try {
             await applyAudioWithDelay(interaction, tempSpotifyPath, danceStart, length < danceEnd ? length : danceEnd, 5000, danceEnd);
             await interaction.editReply({ content: finalMessage, files: [{ attachment: outputVideoPath, name: `${finalFileName}.mp4` }] });

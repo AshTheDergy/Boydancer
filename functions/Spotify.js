@@ -1,7 +1,7 @@
 const fs = require('fs');
 const util = require('util');
 const { giveSecondsFromTime, cooldownUser, applyAudioWithDelay, getFinalFileName, getVideoDuration } = require("./CommonFunctions");
-const { execSync, execFile } = require('child_process');
+const { execSync, execFile, spawnSync, execFileSync, spawn } = require('child_process');
 const config = require("../settings/config");
 
 // Spotify functions
@@ -37,7 +37,7 @@ async function downloadSpotify(interaction, audioUrl) {
     // Set Error Handler
     process.on('unhandledRejection', callback);
 
-    const child = execFile([
+    const child = execFileSync([
         config.Spotify.executable,
         "-f", outputPath,
         "-t", SpotifyTemp,

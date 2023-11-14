@@ -1,0 +1,15 @@
+# Ignore Node Modules
+node_modules/*
+
+# Ignore uploading the Databases to GitHub
+data/*
+
+# Ignore JS Swap Files
+**/*.swp
+
+# Ignore Audio
+files/temporaryYoutube/*.wav
+
+# VS Code
+.vscode/*
+    

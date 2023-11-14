@@ -12,4 +12,5 @@ COPY --from=deps /deps/node_modules /app/node_modules
 ENV SPOTIFY_COOKIES=/app/files/Spotify/cookies.txt
 ENV WIDEVINE_DEVICE_FILE=/app/files/Spotify/device.wvd
 ENV SPOTIFY_AAC_EXECUTABLE=/usr/bin/spotify-aac-downloader
+ENV FFMPEG_EXECUTABLE=/usr/bin/ffmpeg
 ENTRYPOINT ["node", "."]

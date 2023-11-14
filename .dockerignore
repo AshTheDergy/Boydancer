@@ -13,3 +13,5 @@ files/temporaryYoutube/*.wav
 # VS Code
 .vscode/*
     
+# env file
+.env

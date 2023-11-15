@@ -32,32 +32,26 @@ async function downloadSpotify(interaction, audioUrl) {
     const SpotifyPath = `./files/temporarySpotify/`;
     const outputPath = SpotifyPath;
 
-
-    
-    // Node.JS Error Handling suggested by Wroclaw. Yes this is garbage, but working garbage
-    const callback = (reason) => {
+    try {
+        await PythonShell.run(path.join(__dirname, '../scripts/spotify.py'), {
+            args: [
+                outputPath,
+                SpotifyTemp,
+                config.Spotify.cookies,
+                config.Spotify.widevine_device,
+                config.Spotify.ffmpeg,
+                author,
+                audioUrl
+            ]
+        });
+        return true;
+    } catch (reason) {
         if (!interaction.replied) {
+            console.log(reason.traceback)
             interaction.editReply(util.format(config.strings.error.video_generation_detailed, reason.message));
         }
-    };
-
-    // Set Error Handler
-    process.on('unhandledRejection', callback);
-
-    PythonShell.run(path.join(__dirname, '../scripts/spotify.py'), {
-        args: [
-            outputPath,
-            SpotifyTemp,
-            config.Spotify.cookies,
-            config.Spotify.widevine_device,
-            config.Spotify.ffmpeg,
-            author,
-            audioUrl
-        ]
-    });
-
-    // Remove Error Handler after it isn't needed anymore
-    process.removeListener('unhandledRejection', callback);
+    }
+    return false;
 }
 
 async function handleSpotify(client, interaction, audioUrl, cooldowns) {
@@ -90,7 +84,10 @@ async function handleSpotify(client, interaction, audioUrl, cooldowns) {
     const usedSuccessful = used?.successful;
 
     // Download
-    await downloadSpotify(interaction, audioUrl);
+    
+    if (!await downloadSpotify(interaction, audioUrl)) {
+        return;
+    }
 
     const length = await getVideoDuration(interaction, tempSpotifyPath);
     if (length > maxInput) {

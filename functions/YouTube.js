@@ -6,7 +6,7 @@ const config = require("../settings/config");
 
 //youtube functions
 
-function isYoutubeLink(videoUrl) {
+function getYoutubeLink(videoUrl) {
     const patterns = [
         /(?:https?:\/\/)?(?:www\.)?youtu\.?be(?:\.com)?\/(?:watch\?v=)?([a-zA-Z0-9_-]{11})/,
         /(?:https?:\/\/)?(?:www\.)?youtube\.com\/(?:watch\?v=)?[a-zA-Z0-9_-]+&?(?:t=\d+m\d+s)?/,
@@ -14,11 +14,13 @@ function isYoutubeLink(videoUrl) {
     ];
 
     for (const pattern of patterns) {
-        if (pattern.test(videoUrl)) {
-            return true;
+        const match = videoUrl.match(pattern)[0];
+        if (match) {
+            return match;
         }
     }
-    return false;
+    
+    return null;
 }
 
 function isWorkingLink_Youtube(videoUrl) {
@@ -186,4 +188,4 @@ async function handleYouTube(client, interaction, audioUrl, cooldowns) {
     }
 }
 
-module.exports = { handleYouTube, isWorkingLink_Youtube, isYoutubeLink, downloadYoutubeVideo, checkYoutubeVideoLength };
+module.exports = { handleYouTube, isWorkingLink_Youtube, getYoutubeLink, downloadYoutubeVideo, checkYoutubeVideoLength };

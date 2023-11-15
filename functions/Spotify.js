@@ -1,23 +1,28 @@
 const fs = require('fs');
 const util = require('util');
 const { giveSecondsFromTime, cooldownUser, applyAudioWithDelay, getFinalFileName, getVideoDuration } = require("./CommonFunctions");
-const { execSync, execFile, spawnSync, execFileSync, spawn } = require('child_process');
 const config = require("../settings/config");
+const { PythonShell } = require('python-shell');
+const path = require('path');
 
 // Spotify functions
-function isSpotifyLink(url) {
+function getSpotifyLink(url) {
     const patterns = [
-        // /^https?:\/\/(open\.spotify\.com)\/(.*)$/,
         // /(https?:\/\/open.spotify.com\/(track|user|artist|album)\/[a-zA-Z0-9]+(\/playlist\/[a-zA-Z0-9]+|)|spotify:(track|user|artist|album):[a-zA-Z0-9]+(:playlist:[a-zA-Z0-9]+|))/,
         /(https?:\/\/open.spotify.com\/(track)\/[a-zA-Z0-9]+)/,
     ];
 
     for (const pattern of patterns) {
-        if (pattern.test(url)) {
-            return true;
+        const match = url.match(pattern)[0];
+        
+        if (!match) {
+            continue;
         }
+
+        return match;
     }
-    return false;
+    
+    return null;
 }
 
 async function downloadSpotify(interaction, audioUrl) {
@@ -27,34 +32,26 @@ async function downloadSpotify(interaction, audioUrl) {
     const SpotifyPath = `./files/temporarySpotify/`;
     const outputPath = SpotifyPath;
 
-    // Node.JS Error Handling suggested by Wroclaw. Yes this is garbage, but working garbage
-    const callback = (reason) => {
+    try {
+        await PythonShell.run(path.join(__dirname, '../scripts/spotify.py'), {
+            args: [
+                outputPath,
+                SpotifyTemp,
+                config.Spotify.cookies,
+                config.Spotify.widevine_device,
+                config.Spotify.ffmpeg,
+                author,
+                audioUrl
+            ]
+        });
+        return true;
+    } catch (reason) {
         if (!interaction.replied) {
+            console.log(reason.traceback)
             interaction.editReply(util.format(config.strings.error.video_generation_detailed, reason.message));
         }
-    };
-
-    // Set Error Handler
-    process.on('unhandledRejection', callback);
-
-    const child = execFileSync([
-        config.Spotify.executable,
-        "-f", outputPath,
-        "-t", SpotifyTemp,
-        "-c", config.Spotify.cookies,
-        "-w", config.Spotify.widevine_device,
-        "--ffmpeg-location", config.Spotify.ffmpeg,
-        `--no-lrc --template-folder-album ""`,
-        "--template-file-single-disc", author,
-        "--template-file-multi-disc", author,
-        audioUrl,
-    ].join(" "), { shell: false });
-
-    // Remove Error Handler after it isn't needed anymore
-    process.removeListener('unhandledRejection', callback);
-
-    // convert and show the output.
-    console.log(child.toString("utf8"));
+    }
+    return false;
 }
 
 async function handleSpotify(client, interaction, audioUrl, cooldowns) {
@@ -87,7 +84,10 @@ async function handleSpotify(client, interaction, audioUrl, cooldowns) {
     const usedSuccessful = used?.successful;
 
     // Download
-    await downloadSpotify(interaction, audioUrl);
+    
+    if (!await downloadSpotify(interaction, audioUrl)) {
+        return;
+    }
 
     const length = await getVideoDuration(interaction, tempSpotifyPath);
     if (length > maxInput) {
@@ -195,4 +195,4 @@ async function handleSpotify(client, interaction, audioUrl, cooldowns) {
     }
 }
 
-module.exports = { handleSpotify, isSpotifyLink };
+module.exports = { handleSpotify, getSpotifyLink };

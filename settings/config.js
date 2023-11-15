@@ -1,9 +1,11 @@
 require('dotenv').config();
 module.exports = {
     news: {
-        version: '2.1',
+        version: '2.2',
         new: [
-            '- Spotify Support'
+            '- More secure Spotify Support',
+            '- More secure YouTube and SoundCloud Checks',
+            '- More secure Discord Bot Environment'
         ],
     },
     TOKEN: process.env.TOKEN,

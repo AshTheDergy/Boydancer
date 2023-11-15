@@ -11,7 +11,7 @@ function getSoundCloudLink(url) {
     ];
 
     for (const pattern of patterns) {
-        const match = url.match(pattern)[0];
+        const match = url.match(pattern)?.[0];
         if (match) {
             return match;
         }

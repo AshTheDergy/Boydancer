@@ -19,7 +19,7 @@ const { isWorkingLink_Youtube, isYoutubeLink, handleYouTube } = require("../../f
 const { handleURL } = require("../../functions/AudioURL");
 const { handleFile } = require('../../functions/AudioFile');
 const { handleSearch } = require('../../functions/YouTubeSearch');
-const { handleSpotify, isSpotifyLink } = require('../../functions/Spotify');
+const { handleSpotify, getSpotifyLink } = require('../../functions/Spotify');
 
 module.exports = {
     name: "boydancer",
@@ -172,14 +172,18 @@ module.exports = {
                     cooldownUser(cooldowns, interaction, 10);
                     return;
                 }
-            } else if (isSpotifyLink(audioUrl)) {
-                handleSpotify(client, interaction, audioUrl, cooldowns);
-            } else if (correctFile.some(extension => audioUrl.endsWith(extension))) {
-                handleURL(client, interaction, audioUrl, cooldowns);
             } else {
-                interaction.reply({ content: util.format(config.strings.error.invalid_link, config.emoji.error), ephemeral: true });
-                cooldownUser(cooldowns, interaction, 10);
-                return;
+                const spotifyLink = getSpotifyLink(audioUrl);
+
+                if (spotifyLink != null) {
+                    handleSpotify(client, interaction, spotifyLink, cooldowns);
+                } else if (correctFile.some(extension => audioUrl.endsWith(extension))) {
+                    handleURL(client, interaction, audioUrl, cooldowns);
+                } else {
+                    interaction.reply({ content: util.format(config.strings.error.invalid_link, config.emoji.error), ephemeral: true });
+                    cooldownUser(cooldowns, interaction, 10);
+                    return;
+                }
             }
         } else if (!audioUrl && audioFile && !searchTitle) {
             handleFile(client, interaction, audioFile, cooldowns);

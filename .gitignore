@@ -15,7 +15,8 @@ files/permanentFiles/*.mp4
 
 # Ignore Audio
 files/temporaryYoutube/*.wav
-
+files/temporarySpotify/*.m4a
+files/spotify_temp_files
 # VS Code
 .vscode/*
 

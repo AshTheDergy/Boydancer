@@ -14,8 +14,8 @@ const cooldowns = new Map();
 const config = require("../../settings/config");
 
 // Handlers
-const { isWorkingLink_SoundCloud, isSoundCloudLink, handleSoundCloud } = require("../../functions/SoundCloud");
-const { isWorkingLink_Youtube, isYoutubeLink, handleYouTube } = require("../../functions/YouTube");
+const { isWorkingLink_SoundCloud, handleSoundCloud, getSoundCloudLink } = require("../../functions/SoundCloud");
+const { isWorkingLink_Youtube, handleYouTube, getYoutubeLink } = require("../../functions/YouTube");
 const { handleURL } = require("../../functions/AudioURL");
 const { handleFile } = require('../../functions/AudioFile');
 const { handleSearch } = require('../../functions/YouTubeSearch');
@@ -147,44 +147,57 @@ module.exports = {
         if (cooldown && !whiteListed.includes(author)) {
             const remaining = humanizeDuration(cooldown - Date.now(), { units: ['m', 's'], round: true });
             interaction.reply({ content: util.format(config.strings.cooldown, remaining), ephemeral: true });
-        } else if (!audioUrl && !audioFile && !searchTitle) {
+            return;
+        }
+
+        if (!audioUrl && !audioFile && !searchTitle) {
             interaction.reply({ content: util.format(config.strings.error.invalid_everything, config.emoji.error), ephemeral: true });
             cooldownUser(cooldowns, interaction, 10);
             return;
-        } else if (audioUrl && !audioFile && !searchTitle) {
+        }
+        
+        if (audioUrl && !audioFile && !searchTitle) {
             if (!audioUrl.toLowerCase().startsWith("https://")) {
                 interaction.reply({ content: util.format(config.strings.error.invalid_link_http, config.emoji.error), ephemeral: true });
                 cooldownUser(cooldowns, interaction, 10);
                 return;
-            } else if (isYoutubeLink(audioUrl)) {
-                if (isWorkingLink_Youtube(audioUrl)) {
-                    handleYouTube(client, interaction, audioUrl, cooldowns);
+            }
+            
+            const youtubeLink = getYoutubeLink(audioUrl);
+            if (youtubeLink) {
+                if (isWorkingLink_Youtube(youtubeLink)) {
+                    handleYouTube(client, interaction, youtubeLink, cooldowns);
                 } else {
                     interaction.reply({ content: util.format(config.strings.error.youtube_video_does_not_exist, config.emoji.error), ephemeral: true });
                     cooldownUser(cooldowns, interaction, 10);
-                    return;
                 }
-            } else if (isSoundCloudLink(audioUrl)) {
-                if (isWorkingLink_SoundCloud(audioUrl)) {
-                    handleSoundCloud(client, interaction, audioUrl, cooldowns);
+                return;
+            }
+
+            const soundCloudLink = getSoundCloudLink(audioUrl);
+            if (soundCloudLink) {
+                if (isWorkingLink_SoundCloud(soundCloudLink)) {
+                    handleSoundCloud(client, interaction, soundCloudLink, cooldowns);
                 } else {
                     interaction.reply({ content: util.format(config.strings.error.invalid_link_soundcloud, config.emoji.error) });
                     cooldownUser(cooldowns, interaction, 10);
-                    return;
                 }
-            } else {
-                const spotifyLink = getSpotifyLink(audioUrl);
-
-                if (spotifyLink != null) {
-                    handleSpotify(client, interaction, spotifyLink, cooldowns);
-                } else if (correctFile.some(extension => audioUrl.endsWith(extension))) {
-                    handleURL(client, interaction, audioUrl, cooldowns);
-                } else {
-                    interaction.reply({ content: util.format(config.strings.error.invalid_link, config.emoji.error), ephemeral: true });
-                    cooldownUser(cooldowns, interaction, 10);
-                    return;
-                }
+                return;
             }
+            
+            const spotifyLink = getSpotifyLink(audioUrl);
+            if (spotifyLink != null) {
+                handleSpotify(client, interaction, spotifyLink, cooldowns);
+                return;
+            }
+            
+            if (correctFile.some(extension => audioUrl.endsWith(extension))) {
+                handleURL(client, interaction, audioUrl, cooldowns);
+                return;
+            } 
+
+            interaction.reply({ content: util.format(config.strings.error.invalid_link, config.emoji.error), ephemeral: true });
+            cooldownUser(cooldowns, interaction, 10);
         } else if (!audioUrl && audioFile && !searchTitle) {
             handleFile(client, interaction, audioFile, cooldowns);
         } else if (!audioUrl && !audioFile && searchTitle) {

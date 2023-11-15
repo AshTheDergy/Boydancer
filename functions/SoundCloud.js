@@ -5,17 +5,19 @@ const scdl = require('soundcloud-downloader').default;
 const config = require("../settings/config");
 
 // SoundCloud functions
-function isSoundCloudLink(url) {
+function getSoundCloudLink(url) {
     const patterns = [
-        /^https?:\/\/(soundcloud\.com)\/(.*)$/,
+        /^(https:\/\/)?((www\.)|(m\.))?soundcloud\.com\/[\w-]+\/[\w-]+$/,
     ];
 
     for (const pattern of patterns) {
-        if (pattern.test(url)) {
-            return true;
+        const match = url.match(pattern)[0];
+        if (match) {
+            return match;
         }
     }
-    return false;
+
+    return null;
 }
 
 function isWorkingLink_SoundCloud(Url) {
@@ -178,4 +180,4 @@ async function handleSoundCloud(client, interaction, audioUrl, cooldowns) {
     }
 }
 
-module.exports = { handleSoundCloud, isWorkingLink_SoundCloud, isSoundCloudLink };
+module.exports = { handleSoundCloud, isWorkingLink_SoundCloud, getSoundCloudLink };

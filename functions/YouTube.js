@@ -14,7 +14,7 @@ function getYoutubeLink(videoUrl) {
     ];
 
     for (const pattern of patterns) {
-        const match = videoUrl.match(pattern)[0];
+        const match = videoUrl.match(pattern)?.[0];
         if (match) {
             return match;
         }

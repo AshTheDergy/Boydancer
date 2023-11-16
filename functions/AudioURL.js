@@ -101,7 +101,9 @@ async function handleURL(client, interaction, audioUrl, cooldowns) {
         }
     }
 
-    interaction.editReply({ content: config.strings.generation });
+    let replies = config.strings.generation_replies;
+    let randomMessage = Math.floor(Math.random() * replies.length);
+    interaction.editReply(replies[randomMessage]);
     cooldownUser(cooldowns, interaction, 5);
 
     // Tell the DB that the current User has started an Interaction
@@ -118,7 +120,8 @@ async function handleURL(client, interaction, audioUrl, cooldowns) {
         await client.interaction_db.delete(author);
     } catch (error) {
         console.error(config.strings.error.video_generation, error);
-        interaction.followUp(util.format(config.strings.error.video_generation_detailed, error));
+        interaction.followUp(config.strings.error.video_generation);
+        client.users.cache.get(config.error_dm).send(util.format(config.strings.error.video_generation_detailed_dm, interaction.guildId, author, error));
         cooldownUser(cooldowns, interaction, 10);
         if (beatsPerMin) {
             fs.unlinkSync(tempVideoPath);

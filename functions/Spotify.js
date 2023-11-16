@@ -8,8 +8,8 @@ const path = require('path');
 // Spotify functions
 function getSpotifyLink(url) {
     const patterns = [
-        // /(https?:\/\/open.spotify.com\/(track|user|artist|album)\/[a-zA-Z0-9]+(\/playlist\/[a-zA-Z0-9]+|)|spotify:(track|user|artist|album):[a-zA-Z0-9]+(:playlist:[a-zA-Z0-9]+|))/,
         /(https?:\/\/open.spotify.com\/(track)\/[a-zA-Z0-9]+)/,
+        /(https?:\/\/open.spotify.com\/(intl-[a-z]{2})\/(track)\/[a-zA-Z0-9]+)/,
     ];
 
     for (const pattern of patterns) {
@@ -164,7 +164,9 @@ async function handleSpotify(client, interaction, audioUrl, cooldowns) {
             }
         }
 
-        await interaction.editReply({ content: config.strings.generation });
+        let replies = config.strings.generation_replies;
+        let randomMessage = Math.floor(Math.random() * replies.length);
+        await interaction.editReply(replies[randomMessage]);
         cooldownUser(cooldowns, interaction, 5);
 
         // Tell the DB that the current User has started an Interaction
@@ -182,7 +184,8 @@ async function handleSpotify(client, interaction, audioUrl, cooldowns) {
             await client.interaction_db.delete(author);
         } catch (error) {
             console.error(config.strings.error.video_generation, error);
-            interaction.followUp(util.format(config.strings.error.video_generation_detailed, error));
+            interaction.followUp(config.strings.error.video_generation);
+            client.users.cache.get(config.error_dm).send(util.format(config.strings.error.video_generation_detailed_dm, interaction.guildId, author, error));
             cooldownUser(cooldowns, interaction, 10);
             fs.unlinkSync(tempSpotifyPath);
             if (beatsPerMin) {

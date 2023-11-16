@@ -8,7 +8,8 @@ async function getVideoDuration(interaction, videoUrl) {
     // Node.JS Error Handling suggested by Wroclaw. Yes this is garbage, but working garbage
     const callback = (reason) => {
         if (!interaction.replied) {
-            interaction.editReply(util.format(config.strings.error.video_generation_detailed, reason.message));
+            interaction.editReply(config.strings.error.video_generation);
+            client.users.cache.get(config.error_dm).send(util.format(config.strings.error.video_generation_detailed_dm, interaction.guildId, author, error));
         }
     };
     process.on('unhandledRejection', callback);
@@ -19,7 +20,6 @@ async function getVideoDuration(interaction, videoUrl) {
                 reject(err);
                 return;
             }
-            // if (metadata && metadata.format && metadata.format.duration) {
             if (metadata?.format?.duration) {
                 const totalDurationInSeconds = parseFloat(metadata.format.duration);
                 resolve(totalDurationInSeconds.toFixed(1));

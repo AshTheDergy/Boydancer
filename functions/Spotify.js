@@ -124,7 +124,7 @@ async function handleSpotify(client, interaction, audioUrl, cooldowns) {
                 return;
             }
         } else if (!startTime && endTime) {
-            const end = giveSecondsFromTime(endTime);
+            const end = giveSecondsFromTime(author, endTime);
             if (end > length) {
                 interaction.editReply({ content: util.format(config.strings.error.endtime_too_big, config.emoji.error) });
                 cooldownUser(cooldowns, interaction, 10);
@@ -144,7 +144,7 @@ async function handleSpotify(client, interaction, audioUrl, cooldowns) {
                 return;
             }
         } else if (startTime && !endTime) {
-            const start = giveSecondsFromTime(startTime);
+            const start = giveSecondsFromTime(author, startTime);
             if (start > length) {
                 interaction.editReply({ content: util.format(config.strings.error.starttime_bigger_than_video, config.emoji.error) });
                 cooldownUser(cooldowns, interaction, 10);

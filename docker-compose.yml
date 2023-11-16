@@ -4,7 +4,9 @@ services:
   bot:
     build: .
     volumes:
-      - ./data:/app/data
+      - type: bind
+        source: ./data
+        target: /app/data
     stdin_open: true
     tty: true
     env_file: .env

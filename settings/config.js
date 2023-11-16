@@ -5,7 +5,7 @@ module.exports = {
         new: [
             '- More secure Spotify Support',
             '- More secure YouTube and SoundCloud Checks',
-            '- More secure Discord Bot Environment'
+            '- More secure Discord Bot Environment',
         ],
     },
     TOKEN: process.env.TOKEN,

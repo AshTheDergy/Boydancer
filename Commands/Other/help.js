@@ -1,7 +1,7 @@
 // Typedef
 /**
  * @typedef {import('../../handlers/Client')} PH
- * @typedef {import("discord.js").CommandInteraction} CommandInteraction 
+ * @typedef {import("discord.js").CommandInteraction} CommandInteraction
  */
 
 const { EmbedBuilder } = require('discord.js');
@@ -57,9 +57,9 @@ module.exports = {
             \`Speed\` - Select the song speed, input it as a percentage without the percentage symbol (minimum: 50%, maximum: 200%)
             \`BPM\` - Select the Viber bpm (beats per minute) EPILEPSY WARNING (minimum: 50, maximum: 500)
             \`Volume\` - Choose the volume of the song (10% - 500%)
-            __MAX UPLOAD VIDEO LENGTH IS ${config.whitelisted.includes(author) ? config.maxMinute_Premium : config.maxMinute_Normal} MINUTES!!!__
-            __MAX BOYDANCER VIDEO LENGTH IS ${config.whitelisted.includes(author) ? config.danceEnd_Premium/60 : config.danceEnd_Normal/60} MINUTES!!!__**
-            
+            __MAX UPLOAD VIDEO LENGTH IS ${client.config.whitelisted.includes(interaction.user.id) ? client.config.maxMinute_Premium : client.config.maxMinute_Normal} MINUTES!!!__
+            __MAX BOYDANCER VIDEO LENGTH IS ${client.config.whitelisted.includes(interaction.user.id) ? client.config.danceEnd_Premium/60 : client.config.danceEnd_Normal/60} MINUTES!!!__**
+
             ### Supported Files:
             \`${correctFile}\``
             )
@@ -71,8 +71,8 @@ module.exports = {
                 > <a:spinmerightround:1168252685330415637> ${botuptime} Uptime
                 > <:inthezone:1168249217005932605> \`${allguilds}\` Guilds ${bugs1 > 0 ? `\n> <:devilish:1168249108511854632> \`${bugs1}\` Current bugs` : " "}
                 > Use \`/report bug\` to report bugs and other stuff!
-                [Support the Bot Developer!](https://ko-fi.com/ashthedergy)**
-                
+                [Support the Bot Developer / Ash!](https://ko-fi.com/ashthedergy)**
+
                 **HUGE THANKS TO __uwu_peter__ FOR HELP IN DEVELOPING!**`
                 },
                 {

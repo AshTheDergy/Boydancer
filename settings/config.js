@@ -1,7 +1,7 @@
 require('dotenv').config();
 module.exports = {
     news: {
-        version: '2.3',
+        version: '2.3.1',
         new: [
             '- Bugfixes',
             '- Premium can now go up to 20 Minutes¹',
@@ -47,7 +47,7 @@ module.exports = {
             speed: "Choose audio speed percentage (50% - 200%)",
             bpm: "Choose Viber bpm (beats per minute) (max 500)",
             volume: "Choose the volume of the song (10% - 500%)",
-            poop: ":troll:"
+            troll: ":troll:"
         },
         error: {
             command_not_found: "%s `%s` Command Not Found",

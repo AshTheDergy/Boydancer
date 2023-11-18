@@ -62,10 +62,10 @@ module.exports = {
                     name: "boyhappysing (bpm: 149)",
                     value: 7,
                 },
-                /*{
+                {
                     name: "derg",
                     value: 11,
-                }*/
+                }
             ]
         },
         {

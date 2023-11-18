@@ -73,11 +73,21 @@ async function changeVideoBPM(inputVideoPath, tempVid, beat, BPM, duration) {
 }
 
 async function applyAudioToVideoFILE(interaction, file, start, end, danceEnd) {
+
+    // :troll:
+
+    const troll = interaction.options.getBoolean("troll");
+
     // Speed
     const selectedSpeed = interaction.options.getInteger("speed");
     const beatsPerMin = interaction.options.getInteger("bpm");
     const audioSpeed = selectedSpeed || 100;
     const normalizedAudioSpeed = Math.min(200, Math.max(50, audioSpeed));
+
+    // Volume
+
+    const audioVolume = interaction.options.getInteger("volume");
+    const volume = audioVolume > 500 ? 500 : audioVolume < 10 ? 10 : audioVolume || 1;
 
     // Duration
     const calculatedDuration = (end - start) / (normalizedAudioSpeed / 100);
@@ -91,6 +101,12 @@ async function applyAudioToVideoFILE(interaction, file, start, end, danceEnd) {
     const tempVideoPath = `./files/otherTemp/${interaction.user.id}.mp4`;
     const outputVideoPath = `./files/temporaryFinalVideo/${interaction.user.id}.mp4`;
 
+    // Size
+
+    let maxMB = getMaxMB(interaction.guild.premiumTier);
+    const reducerNum = Math.max(Math.round((maxMB / (duration - duration * 0.94)) * 10) / 10, 0.1);
+    const reducer = troll ? 0.1 : reducerNum > 1 ? 1 : reducerNum
+
     // Apply BPM Change if specified
     if (beatsPerMin) {
         const bpm = getBeatsPerMin(beatsPerMin);
@@ -98,25 +114,27 @@ async function applyAudioToVideoFILE(interaction, file, start, end, danceEnd) {
 
         await changeVideoBPM(backgroundViber, tempVideoPath, beat, bpm, duration);
     }
-
+    
     return new Promise((resolve, reject) => {
         const ffmpegProcess = ffmpeg()
             .input(beatsPerMin ? tempVideoPath : backgroundViber)
-            .inputOptions(['-ss 0'])
+            .inputOptions(['-ss 0', '-stream_loop -1'])
             .input(file)
             .inputOptions(['-ss ' + start.toString()])
             .complexFilter([
-                `[1:a]atempo=${normalizedAudioSpeed / 100},volume=1[music];[music]amix=inputs=1[audioout]`,
+                `[1:a]atempo=${normalizedAudioSpeed / 100},volume=${volume / 100}[music];[music]amix=inputs=1[audioout]`,
             ])
             .outputOptions([
                 '-map 0:v',
                 '-map [audioout]',
-                '-c:v copy',
+                '-c:v libx264',
                 '-c:a aac',
                 '-t ' + duration.toString(),
                 '-y',
             ])
             .output(outputVideoPath)
+            .audioBitrate(troll ? 1 : 8000)
+            .videoFilter(`scale=iw*${reducer > 1 ? 1 : reducer}:-1`)
             .on('error', (err) => {
                 reject(err);
             })
@@ -148,13 +166,27 @@ function getFinalFileName(viber) {
 
 function getViberBPM(viber) {
     switch (viber) {
-        case config.ViberType.BoyDancer:
+        case config.ViberType.BoyDancer: //1
             return 155;
-        case config.ViberType.BoyJammer:
+        case config.ViberType.BoyJammer: //2
             return 155;
+        case config.ViberType.BoyOriginal: //4
+            return 120;
+        case config.ViberType.BoyYayDancer: //5
+            return 155;
+        case config.ViberType.BoySinger: //6
+            return 99;
+        case config.ViberType.BoyHappySing: //7
+            return 149;
         default:
             return 100;
     }
+}
+
+function getMaxMB(guild) {
+    if (guild == 2) return 50;
+    if (guild == 3) return 100;
+    return 25
 }
 
 function getBeatsPerMin(beatsPerMin) {

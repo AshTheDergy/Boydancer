@@ -43,15 +43,15 @@ module.exports = {
                     value: 2,
                 },
                 {
-                    name: "boybullying",
+                    name: "boybullying (bpm: 100)",
                     value: 3,
                 },
                 {
-                    name: "boyoriginal",
+                    name: "boyoriginal (bpm: 120)",
                     value: 4,
                 },
                 {
-                    name: "boyyaydancer",
+                    name: "boyyaydancer (bpm: 155)",
                     value: 5,
                 },
                 {
@@ -59,9 +59,13 @@ module.exports = {
                     value: 6,
                 },
                 {
+                    name: "boyhappysing (bpm: 149)",
+                    value: 7,
+                },
+                /*{
                     name: "derg",
                     value: 11,
-                }
+                }*/
             ]
         },
         {
@@ -98,6 +102,16 @@ module.exports = {
             name: "bpm",
             description: config.strings.options.bpm,
             type: 4,
+        },
+        {
+            name: "volume",
+            description: config.strings.options.volume,
+            type: 4,
+        },
+        {
+            name: "troll",
+            description: config.strings.options.troll,
+            type: 5,
         },
     ],
 

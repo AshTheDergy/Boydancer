@@ -56,8 +56,9 @@ module.exports = {
             \`End\` - Select this to add a end time from the source audio/video (e.g. 0:24, 2:52)
             \`Speed\` - Select the song speed, input it as a percentage without the percentage symbol (minimum: 50%, maximum: 200%)
             \`BPM\` - Select the Viber bpm (beats per minute) EPILEPSY WARNING (minimum: 50, maximum: 500)
-            __MAX UPLOAD VIDEO LENGTH IS 10 MINUTES!!!__
-            __MAX BOYDANCER VIDEO LENGTH IS 2 MINUTES!!!__**
+            \`Volume\` - Choose the volume of the song (10% - 500%)
+            __MAX UPLOAD VIDEO LENGTH IS ${config.whitelisted.includes(author) ? config.maxMinute_Premium : config.maxMinute_Normal} MINUTES!!!__
+            __MAX BOYDANCER VIDEO LENGTH IS ${config.whitelisted.includes(author) ? config.danceEnd_Premium/60 : config.danceEnd_Normal/60} MINUTES!!!__**
             
             ### Supported Files:
             \`${correctFile}\``

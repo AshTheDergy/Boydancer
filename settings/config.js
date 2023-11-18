@@ -1,12 +1,12 @@
 require('dotenv').config();
 module.exports = {
     news: {
-        version: '2.2.1',
+        version: '2.3',
         new: [
             '- Bugfixes',
             '- Premium can now go up to 20 Minutes¹',
-            '',
-            '¹: As long as the generated Video is below 100 MB, otherwise it will bug out for now'
+            '- Volume option',
+            '- Troll mode'
         ],
     },
     TOKEN: process.env.TOKEN,
@@ -27,7 +27,7 @@ module.exports = {
         success: "✅",
         ping: "🏓",
     },
-    whitelisted: ['817843037593403402', '358936084278673415', '762219738570555412'],
+    whitelisted: ['817843037593403402', '762219738570555412'],
     error_dm: '762219738570555412',
     correctFile: [".mp3", ".wav", ".aac", ".flac", ".ogg", ".mp4", ".avi", ".mov", ".webm", ".3gp", ".mkv", ".qt"],
     danceEnd_Premium: 1200,
@@ -46,6 +46,8 @@ module.exports = {
             end: "(format 0:00) Leaving this blank will make the video 1 minute long (20 minutes for premium)",
             speed: "Choose audio speed percentage (50% - 200%)",
             bpm: "Choose Viber bpm (beats per minute) (max 500)",
+            volume: "Choose the volume of the song (10% - 500%)",
+            poop: ":troll:"
         },
         error: {
             command_not_found: "%s `%s` Command Not Found",
@@ -72,6 +74,7 @@ module.exports = {
             spotify_song_too_big: "%s - ** Please ensure that the __Spotify Song__ is __10 minutes (600 seconds)__ or shorter **",
             youtube_is_livestream: ":blush: - ** Please ensure the __Youtube Video__ is not a __Livestream__ **",
             youtube_too_long: "%s - ** Please ensure that the __YouTube Video__ is __10 minutes (600 seconds)__ or shorter **",
+            youtube_too_long_premium: "%s - ** Please ensure that the __YouTube Video__ is __30 minutes (1800 seconds)__ or shorter **",
             youtube_video_does_not_exist: "%s - ** The __Youtube Video__ you provided Does Not Exist **",
             youtube_search_not_found: "Or the video doesn't exist :<",
         },
@@ -85,7 +88,21 @@ module.exports = {
     },
     ViberType: {
         BoyDancer: 1,
-        BoyJammer: 2
+        BoyJammer: 2,
+        BoyBullying: 3,
+        BoyOriginal: 4,
+        BoyYayDancer: 5,
+        BoySinger: 6,
+        BoyHappySing: 7,
+    },
+    ViberSize: {
+        BoyDancer: 240,
+        BoyJammer: 240,
+        BoyBullying: 360,
+        BoyOriginal: 192,
+        BoyYayDancer: 5,
+        BoySinger: 6,
+        BoyHappySing: 7,
     },
     Spotify: {
         executable: process.env.SPOTIFY_AAC_EXECUTABLE,

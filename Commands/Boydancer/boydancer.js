@@ -64,7 +64,7 @@ module.exports = {
                 },
                 {
                     name: "derg",
-                    value: 11,
+                    value: 99,
                 }
             ]
         },

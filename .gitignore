@@ -9,6 +9,7 @@ data/*
 
 # Ignore MP4s
 files/permanentFiles/*.mp4
+files/permanentFiles/backup/*
 
 # Ignore JS Swap Files
 **/*.swp

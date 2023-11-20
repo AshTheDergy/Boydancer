@@ -109,10 +109,37 @@ module.exports = {
             type: 4,
         },
         {
-            name: "troll",
-            description: config.strings.options.troll,
-            type: 5,
-        },
+            name: "modifiers",
+            description: config.strings.options.modifiers,
+            required: false,
+            type: 4,
+            choices: [
+                {
+                    name: "troll",
+                    value: 1,
+                },
+                {
+                    name: "25 MB",
+                    value: 2,
+                },
+                {
+                    name: "reverb (bathroom)",
+                    value: 3,
+                },
+                {
+                    name: "reverb (empty room)",
+                    value: 4,
+                },
+                {
+                    name: "underwater",
+                    value: 5,
+                },
+                {
+                    name: "2x2",
+                    value: 6
+                }
+            ]
+        }
     ],
 
     /**
@@ -126,6 +153,7 @@ module.exports = {
         const audioUrl = interaction.options.getString("link");
         const searchTitle = interaction.options.getString("search");
         const correctFile = config.correctFile;
+        const discordLink = config.correctDiscordLink
 
         // Command usage count tracking
         let used = await client.usage.get(`${interaction.guildId}.${author}`);
@@ -205,7 +233,7 @@ module.exports = {
                 return;
             }
             
-            if (correctFile.some(extension => audioUrl.endsWith(extension))) {
+            if (correctFile.some(extension => audioUrl.endsWith(extension)) || discordLink.test(audioUrl)) {
                 handleURL(client, interaction, audioUrl, cooldowns);
                 return;
             } 

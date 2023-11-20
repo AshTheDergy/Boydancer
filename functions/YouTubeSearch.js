@@ -45,7 +45,6 @@ async function handleSearch(client, interaction, searchTitle, cooldowns) {
     const viber = interaction.options.getInteger("viber");
     const outputVideoPath = `./files/temporaryFinalVideo/${author}.mp4`;
     const tempYoutubePath = `./files/temporaryYoutube/${author}.wav`;
-    const tempVideoPath = `./files/otherTemp/${author}.mp4`;
 
     // Strings
     const finalFileName = getFinalFileName(viber);
@@ -156,16 +155,13 @@ async function handleSearch(client, interaction, searchTitle, cooldowns) {
                 // Tell the DB that the current User has finished their Interaction
                 await client.interaction_db.delete(author);
             } catch (error) {
+                // Tell the DB that the current User has finished their Interaction
+                await client.interaction_db.delete(author);
+                
                 console.error(config.strings.error.video_generation, error);
                 interaction.followUp(config.strings.error.video_generation);
                 client.users.cache.get(config.error_dm).send(util.format(config.strings.error.video_generation_detailed_dm, interaction.guildId, author, error));
                 cooldownUser(cooldowns, interaction, 10);
-                if (beatsPerMin) {
-                    fs.unlinkSync(tempVideoPath);
-                }
-
-                // Tell the DB that the current User has finished their Interaction
-                await client.interaction_db.delete(author);
             }
         }
     }

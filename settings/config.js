@@ -29,6 +29,7 @@ module.exports = {
     whitelisted: ['817843037593403402', '762219738570555412'],
     error_dm: '762219738570555412',
     correctFile: [".mp3", ".wav", ".aac", ".flac", ".ogg", ".mp4", ".avi", ".mov", ".webm", ".3gp", ".mkv", ".qt"],
+    correctDiscordLink: /^https:\/\/cdn\.discordapp\.com\/attachments\/\d+\/\d+\/[a-zA-Z0-9._-]+\.(mp3|wav|aac|flac|ogg|mp4|avi|mov|webm|3gp|mkv|qt)\?.*$/,
     danceEnd_Premium: 1200,
     danceEnd_Normal: 120,
     maxInput_Premium: 1800,
@@ -46,7 +47,7 @@ module.exports = {
             speed: "Choose audio speed percentage (50% - 200%)",
             bpm: "Choose Viber bpm (beats per minute) (max 500)",
             volume: "Choose the volume of the song (10% - 500%)",
-            troll: ":troll:"
+            modifiers: "Modify the video :3"
         },
         error: {
             command_not_found: "%s `%s` Command Not Found",
@@ -90,6 +91,15 @@ module.exports = {
         BoyJammer: 2,
         BoyBullying: 3,
         BoyOriginal: 4,
+        BoyYayDancer: 5,
+        BoySinger: 6,
+        BoyHappySing: 7,
+    },
+    ViberSize: {
+        BoyDancer: 240,
+        BoyJammer: 240,
+        BoyBullying: 360,
+        BoyOriginal: 192,
         BoyYayDancer: 5,
         BoySinger: 6,
         BoyHappySing: 7,

@@ -20,7 +20,6 @@ async function handleFile(client, interaction, audioFile, cooldowns) {
     // Files
     const viber = interaction.options.getInteger("viber");
     const outputVideoPath = `./files/temporaryFinalVideo/${author}.mp4`;
-    const tempVideoPath = `./files/otherTemp/${author}.mp4`;
 
     // Strings
     const finalFileName = getFinalFileName(viber);
@@ -122,7 +121,7 @@ async function handleFile(client, interaction, audioFile, cooldowns) {
         await client.interaction_db.set(author);
 
         try {
-            await applyAudioWithDelay(interaction, file, danceStart, length < danceEnd ? length : danceEnd, 5000, danceEnd);
+            await applyAudioWithDelay(interaction, file, danceStart, length < danceEnd ? length : danceEnd, 1500, danceEnd);
             await interaction.editReply({ content: finalMessage, files: [{ attachment: outputVideoPath, name: `${finalFileName}.mp4` }] });
             fs.unlinkSync(outputVideoPath);
             cooldownUser(cooldowns, interaction, 60);
@@ -131,16 +130,12 @@ async function handleFile(client, interaction, audioFile, cooldowns) {
             // Tell the DB that the current User has finished their Interaction
             await client.interaction_db.delete(author);
         } catch (error) {
+            // Tell the DB that the current User has finished their Interaction
+            await client.interaction_db.delete(author);
             console.error(config.strings.error.video_generation, error);
             interaction.followUp(config.strings.error.video_generation);
             client.users.cache.get(config.error_dm).send(util.format(config.strings.error.video_generation_detailed_dm, interaction.guildId, author, error));
             cooldownUser(cooldowns, interaction, 10);
-            if (beatsPerMin) {
-                fs.unlinkSync(tempVideoPath);
-            }
-
-            // Tell the DB that the current User has finished their Interaction
-            await client.interaction_db.delete(author);
         }
     }
 }

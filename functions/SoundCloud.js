@@ -63,7 +63,6 @@ async function handleSoundCloud(client, interaction, audioUrl, cooldowns) {
     const viber = interaction.options.getInteger("viber");
     const outputVideoPath = `./files/temporaryFinalVideo/${author}.mp4`;
     const tempSoundCloudPath = `./files/temporarySoundCloud/${author}.wav`;
-    const tempVideoPath = `./files/otherTemp/${author}.mp4`;
 
     // Strings
     const finalFileName = getFinalFileName(viber);
@@ -169,17 +168,13 @@ async function handleSoundCloud(client, interaction, audioUrl, cooldowns) {
             // Tell the DB that the current User has finished their Interaction
             await client.interaction_db.delete(author);
         } catch (error) {
+            // Tell the DB that the current User has finished their Interaction
+            await client.interaction_db.delete(author);
             console.error(config.strings.error.video_generation, error);
             interaction.followUp(config.strings.error.video_generation);
             client.users.cache.get(config.error_dm).send(util.format(config.strings.error.video_generation_detailed_dm, interaction.guildId, author, error));
             cooldownUser(cooldowns, interaction, 10);
             fs.unlinkSync(tempSoundCloudPath);
-            if (beatsPerMin) {
-                fs.unlinkSync(tempVideoPath);
-            }
-
-            // Tell the DB that the current User has finished their Interaction
-            await client.interaction_db.delete(author);
         }
     }
 }

@@ -1,12 +1,11 @@
 require('dotenv').config();
 module.exports = {
     news: {
-        version: '2.3.1',
+        version: '2.4',
         new: [
-            '- Bugfixes',
-            '- Premium can now go up to 20 Minutes¹',
-            '- Volume option',
-            '- Troll mode'
+            '- Premium can now go up to 20 Minutes',
+            '- Modifiers',
+            '- Boydancer is a bit faster'
         ],
     },
     TOKEN: process.env.TOKEN,
@@ -91,15 +90,6 @@ module.exports = {
         BoyJammer: 2,
         BoyBullying: 3,
         BoyOriginal: 4,
-        BoyYayDancer: 5,
-        BoySinger: 6,
-        BoyHappySing: 7,
-    },
-    ViberSize: {
-        BoyDancer: 240,
-        BoyJammer: 240,
-        BoyBullying: 360,
-        BoyOriginal: 192,
         BoyYayDancer: 5,
         BoySinger: 6,
         BoyHappySing: 7,

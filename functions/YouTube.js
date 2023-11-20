@@ -67,7 +67,6 @@ async function handleYouTube(client, interaction, audioUrl, cooldowns) {
     const viber = interaction.options.getInteger("viber");
     const outputVideoPath = `./files/temporaryFinalVideo/${author}.mp4`;
     const tempYoutubePath = `./files/temporaryYoutube/${author}.wav`;
-    const tempVideoPath = `./files/otherTemp/${author}.mp4`;
 
     // Strings
     const finalFileName = getFinalFileName(viber);
@@ -82,7 +81,7 @@ async function handleYouTube(client, interaction, audioUrl, cooldowns) {
         interaction.editReply({ content: config.strings.error.youtube_is_livestream }); //kys
         cooldownUser(cooldowns, interaction, 10);
     } else if (length > maxInput) {
-        interaction.editReply({ content: util.format(config.strings.error.youtube_too_long, config.emoji.error) });
+        interaction.editReply({ content: util.format(config.whitelisted.includes(author) ? config.strings.error.youtube_too_long_premium : config.strings.error.youtube_too_long, config.emoji.error) });
         cooldownUser(cooldowns, interaction, 10);
         return;
     } else {
@@ -176,17 +175,13 @@ async function handleYouTube(client, interaction, audioUrl, cooldowns) {
             // Tell the DB that the current User has finished their Interaction
             await client.interaction_db.delete(author);
         } catch (error) {
+            // Tell the DB that the current User has finished their Interaction
+            await client.interaction_db.delete(author);
             console.error(config.strings.error.video_generation, error);
             interaction.followUp(config.strings.error.video_generation);
             client.users.cache.get(config.error_dm).send(util.format(config.strings.error.video_generation_detailed_dm, interaction.guildId, author, error));
             cooldownUser(cooldowns, interaction, 10);
             fs.unlinkSync(tempYoutubePath);
-            if (beatsPerMin) {
-                fs.unlinkSync(tempVideoPath);
-            }
-
-            // Tell the DB that the current User has finished their Interaction
-            await client.interaction_db.delete(author);
         }
     }
 }

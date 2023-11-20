@@ -41,6 +41,7 @@ function cooldownUser(cooldown_map, interaction, time) {
 
 function giveSecondsFromTime(author, input) {
     const maxMinute = config.whitelisted.includes(author) ? config.maxMinute_Premium : config.maxMinute_Normal;
+    console.log(author)
     const timePattern = /^(0?\d|1\d|2[0-3]):[0-5]\d$/;
     const [minutes, seconds] = input.split(":").map(Number);
     if (!timePattern.test(input)) {
@@ -54,31 +55,14 @@ function giveSecondsFromTime(author, input) {
 
 // Audio applying functions
 
-async function changeVideoBPM(inputVideoPath, tempVid, beat, BPM, duration) {
-    return new Promise((resolve, reject) => {
-        const ffmpegProcess = ffmpeg()
-            .input(inputVideoPath)
-            .videoFilter(`setpts=${beat / BPM}*PTS`)
-            .outputOptions([`-t ${duration}`, '-y'])
-            .output(tempVid)
-            .on('error', (err) => {
-                reject(err);
-            })
-            .on('end', () => {
-                resolve(tempVid);
-            });
-
-        ffmpegProcess.run();
-    });
-}
-
 async function applyAudioToVideoFILE(interaction, file, start, end, danceEnd) {
 
-    // :troll:
+    // modifiers
 
-    const troll = interaction.options.getBoolean("troll");
+    const modifier = interaction.options.getInteger("modifiers");
 
     // Speed
+
     const selectedSpeed = interaction.options.getInteger("speed");
     const beatsPerMin = interaction.options.getInteger("bpm");
     const audioSpeed = selectedSpeed || 100;
@@ -87,7 +71,7 @@ async function applyAudioToVideoFILE(interaction, file, start, end, danceEnd) {
     // Volume
 
     const audioVolume = interaction.options.getInteger("volume");
-    const volume = audioVolume > 500 ? 500 : audioVolume < 10 ? 10 : audioVolume || 1;
+    const volume = !audioVolume ? 100 : audioVolume > 500 ? 500 : audioVolume < 10 ? 10 : audioVolume;
 
     // Duration
     const calculatedDuration = (end - start) / (normalizedAudioSpeed / 100);
@@ -98,32 +82,35 @@ async function applyAudioToVideoFILE(interaction, file, start, end, danceEnd) {
     const backgroundViber = `./files/permanentFiles/back${viber}.mp4`;
 
     // Paths
-    const tempVideoPath = `./files/otherTemp/${interaction.user.id}.mp4`;
     const outputVideoPath = `./files/temporaryFinalVideo/${interaction.user.id}.mp4`;
 
     // Size
 
+    const sizeModifier = 0.94 // reduce this to make the videos lower (do not go above 0.99)
     let maxMB = getMaxMB(interaction.guild.premiumTier);
-    const reducerNum = Math.max(Math.round((maxMB / (duration - duration * 0.94)) * 10) / 10, 0.1);
-    const reducer = troll ? 0.1 : reducerNum > 1 ? 1 : reducerNum
+    const reducerNum = Math.max(Math.round((modifier == 2 ? 25 : maxMB / (duration - duration * sizeModifier)) * 10) / 10, 0.1);
+    const reducer = reducerNum > 1 ? 1 : reducerNum;
 
-    // Apply BPM Change if specified
-    if (beatsPerMin) {
-        const bpm = getBeatsPerMin(beatsPerMin);
-        let beat = getViberBPM(viber);
+    // BPM
 
-        await changeVideoBPM(backgroundViber, tempVideoPath, beat, bpm, duration);
-    }
-    
+    const bpm = !beatsPerMin ? getViberBPM(viber) : beatsPerMin > 500 ? 500 : beatsPerMin < 10 ? 10 : beatsPerMin;
+    const beat = getViberBPM(viber);
+
     return new Promise((resolve, reject) => {
         const ffmpegProcess = ffmpeg()
-            .input(beatsPerMin ? tempVideoPath : backgroundViber)
+            .input(backgroundViber)
             .inputOptions(['-ss 0', '-stream_loop -1'])
             .input(file)
             .inputOptions(['-ss ' + start.toString()])
             .complexFilter([
+                modifier == 1 ? `[1:a]atempo=${normalizedAudioSpeed / 100},volume=${volume / 67}[music];[music]amix=inputs=1[audioout]` :
+                modifier == 3 ? `[1:a]atempo=${normalizedAudioSpeed / 100},volume=${volume / 100},aecho=0.8:1:10:1[reverb];[reverb]amix=inputs=1[audioout]` :
+                modifier == 4 ? `[1:a]atempo=${normalizedAudioSpeed / 100},volume=${volume / 100},aecho=0.6:1:400:0.8[reverb];[reverb]amix=inputs=1[audioout]` :
+                modifier == 5 ? `[1:a]atempo=${normalizedAudioSpeed / 100},volume=${volume / 100},aformat=sample_fmts=s16:channel_layouts=stereo,lowpass=300[underwater];[underwater]amix=inputs=1[audioout]` :
                 `[1:a]atempo=${normalizedAudioSpeed / 100},volume=${volume / 100}[music];[music]amix=inputs=1[audioout]`,
             ])
+            .videoBitrate(modifier == 1 ? '10k' : modifier == 6 ? '1k' : 0)
+            .audioBitrate(modifier == 1 || modifier == 6 ? '1k' : 0)
             .outputOptions([
                 '-map 0:v',
                 '-map [audioout]',
@@ -133,15 +120,15 @@ async function applyAudioToVideoFILE(interaction, file, start, end, danceEnd) {
                 '-y',
             ])
             .output(outputVideoPath)
-            .audioBitrate(troll ? 1 : 8000)
-            .videoFilter(`scale=iw*${reducer > 1 ? 1 : reducer}:-1`)
+            .videoFilter(
+                modifier == 1 ? `setpts=${beat / bpm}*PTS,scale=iw:-1` :
+                modifier == 6 ? `setpts=10*PTS,scale=2:2` :
+                `setpts=${beat / bpm}*PTS,scale=iw*${reducer > 1 ? 1 : reducer}:-1`
+            )
             .on('error', (err) => {
                 reject(err);
             })
             .on('end', () => {
-                if (beatsPerMin) {
-                    fs.unlinkSync(tempVideoPath);
-                }
                 resolve(outputVideoPath);
             });
         ffmpegProcess.run();
@@ -187,15 +174,6 @@ function getMaxMB(guild) {
     if (guild == 2) return 50;
     if (guild == 3) return 100;
     return 25
-}
-
-function getBeatsPerMin(beatsPerMin) {
-    // Old Code: return beatsPerMin ? beatsPerMin > 500 ? 500 : beatsPerMin < 50 ? 50 : beatsPerMin : 10000;
-
-    if (!beatsPerMin) return 10000;
-    if (beatsPerMin > 500) return 500;
-    if (beatsPerMin < 50) return 50;
-    return beatsPerMin;
 }
 
 module.exports = { cooldownUser, giveSecondsFromTime, applyAudioWithDelay, getVideoDuration, getFinalFileName };

@@ -41,7 +41,6 @@ function cooldownUser(cooldown_map, interaction, time) {
 
 function giveSecondsFromTime(author, input) {
     const maxMinute = config.whitelisted.includes(author) ? config.maxMinute_Premium : config.maxMinute_Normal;
-    console.log(author)
     const timePattern = /^(0?\d|1\d|2[0-3]):[0-5]\d$/;
     const [minutes, seconds] = input.split(":").map(Number);
     if (!timePattern.test(input)) {

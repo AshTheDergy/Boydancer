@@ -57,6 +57,7 @@ module.exports = {
             \`Speed\` - Select the song speed, input it as a percentage without the percentage symbol (minimum: 50%, maximum: 200%)
             \`BPM\` - Select the Viber bpm (beats per minute) EPILEPSY WARNING (minimum: 50, maximum: 500)
             \`Volume\` - Choose the volume of the song (10% - 500%)
+            \`Modifier\` - Choose a modifier for the video/audio
             __MAX UPLOAD VIDEO LENGTH IS ${client.config.whitelisted.includes(interaction.user.id) ? client.config.maxMinute_Premium : client.config.maxMinute_Normal} MINUTES!!!__
             __MAX BOYDANCER VIDEO LENGTH IS ${client.config.whitelisted.includes(interaction.user.id) ? client.config.danceEnd_Premium/60 : client.config.danceEnd_Normal/60} MINUTES!!!__**
 

@@ -1,11 +1,12 @@
 require('dotenv').config();
 module.exports = {
     news: {
-        version: '2.4',
+        version: '2.4.1',
         new: [
             '- Premium can now go up to 20 Minutes',
-            '- Modifiers',
-            '- Boydancer is a bit faster'
+            '- Modifiers (more coming soon)',
+            '- Boydancer is a bit faster',
+            '- Added modifier info to \`help boydancer\`'
         ],
     },
     TOKEN: process.env.TOKEN,

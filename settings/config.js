@@ -1,13 +1,14 @@
 require('dotenv').config();
 module.exports = {
     news: {
-        version: '2.4.2',
+        version: '2.4.3',
         new: [
             '- Premium can now go up to 20 Minutes',
             '- Modifiers (more coming soon)',
             '- Boydancer is a bit faster',
-            '- Added modifier info to `help boydancer`',
-            '- Protogen Vibers'
+            '- Added modifier info to \`help boydancer\`',
+             '- Protogen Vibers',
+            '- AUDIO ISSUES ARE BEING WORKED ON'
         ],
     },
     TOKEN: process.env.TOKEN,
@@ -96,20 +97,22 @@ module.exports = {
         BoyYayDancer: 5,
         BoySinger: 6,
         BoyHappySing: 7,
-    },
-    ViberSize: {
-        BoyDancer: 240,
-        BoyJammer: 240,
-        BoyBullying: 360,
-        BoyOriginal: 192,
-        BoyYayDancer: 5,
-        BoySinger: 6,
-        BoyHappySing: 7,
+        ProtogenBench: 97,
+        ProtogenDance: 98,
+        Derg: 99,
     },
     Spotify: {
         executable: process.env.SPOTIFY_AAC_EXECUTABLE,
         cookies: process.env.SPOTIFY_COOKIES,
         widevine_device: process.env.WIDEVINE_DEVICE_FILE,
         ffmpeg: process.env.FFMPEG_EXECUTABLE
+    },
+    Filters: {
+        troll: 1,
+        mb25: 2,
+        bathroom: 3,
+        emptyRoom: 4,
+        underwater: 5,
+        twotwo: 6,
     }
 };

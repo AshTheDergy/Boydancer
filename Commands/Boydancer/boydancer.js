@@ -63,6 +63,14 @@ module.exports = {
                     value: 7,
                 },
                 {
+                    name: "Protogen bench",
+                    value: 97,
+                },
+                {
+                    name: "Protogen dance",
+                    value: 98,
+                },
+                {
                     name: "derg",
                     value: 99,
                 }

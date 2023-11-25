@@ -1,178 +1,123 @@
-/* eslint-disable no-async-promise-executor */
-const fs = require('fs');
-const util = require('util');
-const ffmpeg = require('fluent-ffmpeg');
-const config = require("../settings/config");
-
-async function getVideoDuration(interaction, videoUrl) {
-    // Node.JS Error Handling suggested by Wroclaw. Yes this is garbage, but working garbage
-    const callback = (reason) => {
-        if (!interaction.replied) {
-            interaction.editReply(config.strings.error.video_generation);
-            client.users.cache.get(config.error_dm).send(util.format(config.strings.error.video_generation_detailed_dm, interaction.guildId, author, error));
-        }
-    };
-    process.on('unhandledRejection', callback);
-
-    return new Promise((resolve, reject) => {
-        ffmpeg.ffprobe(videoUrl, (err, metadata) => {
-            if (err) {
-                reject(err);
-                return;
-            }
-            if (metadata?.format?.duration) {
-                const totalDurationInSeconds = parseFloat(metadata.format.duration);
-                resolve(totalDurationInSeconds.toFixed(1));
-
-                // Remove Error Handler after it isn't needed anymore
-                process.removeListener('unhandledRejection', callback);
-            } else {
-                resolve(null);
-            }
-        });
-    });
-}
-
-// Functions
-function cooldownUser(cooldown_map, interaction, time) {
-    cooldown_map.set(interaction.user.id, Date.now() + time * 1000); //time in seconds
-    setTimeout(() => cooldown_map.delete(interaction.user.id), time * 1000);
-}
-
-function giveSecondsFromTime(author, input) {
-    const maxMinute = config.whitelisted.includes(author) ? config.maxMinute_Premium : config.maxMinute_Normal;
-    const timePattern = /^(0?\d|1\d|2[0-3]):[0-5]\d$/;
-    const [minutes, seconds] = input.split(":").map(Number);
-    if (!timePattern.test(input)) {
-        return false;
-    } else if (minutes < 0 || minutes > maxMinute && seconds > 0 || minutes > maxMinute || seconds < 0 || seconds > 60) {
-        return false;
-    } else {
-        return seconds + minutes * 60;
+require('dotenv').config();
+module.exports = {
+    news: {
+        version: '2.4.2',
+        new: [
+            '- Premium can now go up to 20 Minutes',
+            '- Modifiers (more coming soon)',
+            '- Boydancer is a bit faster',
+            '- Added modifier info to \`help boydancer\`',
+            '- AUDIO ISSUES ARE BEING WORKED ON'
+        ],
+    },
+    TOKEN: process.env.TOKEN,
+    embed: {
+        color: "#220f80",
+        wrongcolor: "#8a0808",
+        footertext: "Made by AshTheDergy | Fluffy Derg Productions, hosted by uwu_peter"
+    },
+    slash: {
+        global: true,
+        guildID: "1099007046902353972",
+    },
+    options: {
+        embedFooter: true,
+    },
+    emoji: {
+        error: "❌",
+        success: "✅",
+        ping: "🏓",
+    },
+    whitelisted: ['817843037593403402', '762219738570555412'],
+    error_dm: '762219738570555412',
+    correctFile: [".mp3", ".wav", ".aac", ".flac", ".ogg", ".mp4", ".avi", ".mov", ".webm", ".3gp", ".mkv", ".qt"],
+    correctDiscordLink: /^https:\/\/cdn\.discordapp\.com\/attachments\/\d+\/\d+\/[a-zA-Z0-9._-]+\.(mp3|wav|aac|flac|ogg|mp4|avi|mov|webm|3gp|mkv|qt)\?.*$/,
+    danceEnd_Premium: 1200,
+    danceEnd_Normal: 120,
+    maxInput_Premium: 1800,
+    maxInput_Normal: 600,
+    maxMinute_Premium: 30,
+    maxMinute_Normal: 10,
+    strings: {
+        options: {
+            viber: "Select your background Viber",
+            file: "A file (.mp3, .mp4, etc)",
+            link: "A video/song link (youtube, soundcloud, spotify and file links only)",
+            search: "Search by a YouTube video title",
+            start: "(format 0:00) Leaving this blank will cause it to use the audio from 0:00",
+            end: "(format 0:00) Leaving this blank will make the video 1 minute long (20 minutes for premium)",
+            speed: "Choose audio speed percentage (50% - 200%)",
+            bpm: "Choose Viber bpm (beats per minute) (max 500)",
+            volume: "Choose the volume of the song (10% - 500%)",
+            modifiers: "Modify the video :3"
+        },
+        error: {
+            command_not_found: "%s `%s` Command Not Found",
+            video_generation: "An error occurred while generating the video :( (Make sure the Video is not Age Restricted)",
+            video_generation_detailed: "An error occurred while generating the video. (Make sure the Video is not Age Restricted):\n\n||%s||",
+            video_generation_detailed_dm: "Error in Guild: %s, User: <@%s>:\n\n%s",
+            invalid_everything: "%s - ** Please provide a __Link__ or __File__ (use `/help boydancer` for more information) **",
+            invalid_link: "%s - ** Please provide a supported link (supported are __Youtube__, __Spotify__, __SoundCloud__ and __Audio/Video__ links (use `/help boydancer` for more information) **",
+            invalid_link_soundcloud: "%s - ** The __SoundCloud Link__ you provided does not exist. __Shortened Links__ also don't work **",
+            invalid_link_http: "%s - ** The provided Audio URL must start with `https://` **",
+            invalid_file: "%s - Please use a correct File (use `/help boydancer` for more information)",
+            time_over_danceEnd_limit: "%s - ** The time between __START__ and __END__ is over `%s` seconds **",
+            time_too_big: "%s - ** Please ensure your __START__ and/or __END__ times are shorter than the video's duration **",
+            time_is_the_same: "%s - ** The time between __START__ and __END__ has to be at least `1` second **",
+            time_incorrect: "%s - ** Please insert a correct __START__ and/or __END__ time (use `/help boydancer` for more information) **",
+            endtime_too_big: "%s - ** Please ensure your __END__ time is shorter than the video **",
+            endtime_is_0: "The __END__ time cannot be `0` seconds",
+            endtime_incorrect: "%s - ** Please insert a correct __END__ time **",
+            starttime_too_big: "%s - ** Please ensure your __START__ time is shorter than __END__ time **",
+            starttime_bigger_than_video: "%s - ** Please make sure your __START__ time is smaller than the video **",
+            starttime_incorrect: "%s - ** Please insert a correct __START__ time **",
+            file_too_big: "%s - The File you provided is over __50 MB__",
+            soundcloud_song_too_big: "%s - ** Please ensure that the __SoundCloud Song__ is __10 minutes (600 seconds)__ or shorter **",
+            spotify_song_too_big: "%s - ** Please ensure that the __Spotify Song__ is __10 minutes (600 seconds)__ or shorter **",
+            youtube_is_livestream: ":blush: - ** Please ensure the __Youtube Video__ is not a __Livestream__ **",
+            youtube_too_long: "%s - ** Please ensure that the __YouTube Video__ is __10 minutes (600 seconds)__ or shorter **",
+            youtube_too_long_premium: "%s - ** Please ensure that the __YouTube Video__ is __30 minutes (1800 seconds)__ or shorter **",
+            youtube_video_does_not_exist: "%s - ** The __Youtube Video__ you provided Does Not Exist **",
+            youtube_search_not_found: "Or the video doesn't exist :<",
+        },
+        generation: "Generating video... <a:boypet2:1168249848055734343>",
+        epilepsy: "\n<:boys:1168248994108030977> EPILEPSY WARNING <:boys:1168248994108030977>\n",
+        finished: "Here is your boydancer:",
+        cooldown: "You are On Cooldown, wait `%s` Seconds",
+        description: "Apply audio to the boykisser dancing video. Maximum of 120 seconds",
+        random_invalid_replies: [`Ha Ha very funny. "lem e putt .gsgl gggmgm as jok" :nerd::nerd::nerd:`, `No...`, `Kindly deactivate yourself :blush:`, `Mods, crush his skull`, `Mods, crush his balls`, `Nuh uh`, `I'll make you cease to exist :3`, `https://cdn.discordapp.com/attachments/873603423998705718/1145258850132443206/8apAlKE.gif`, `https://cdn.discordapp.com/attachments/873603423998705718/1145258963676430346/cqtykgb.gif`, `https://cdn.discordapp.com/attachments/873603423998705718/1145985376515788800/pjSHLOr.png`],
+        generation_replies: ["Generating your video... <a:boypet2:1168249848055734343>", "Cooking up your video... <:soupkisser:1174679354958155848>", "Generating your video :3 <a:boypet2:1168249848055734343>", "Meow mrow~ miau. (Generating your video) <a:boypet2:1168249848055734343>"],
+    },
+    ViberType: {
+        BoyDancer: 1,
+        BoyJammer: 2,
+        BoyBullying: 3,
+        BoyOriginal: 4,
+        BoyYayDancer: 5,
+        BoySinger: 6,
+        BoyHappySing: 7,
+    },
+    ViberSize: {
+        BoyDancer: 240,
+        BoyJammer: 240,
+        BoyBullying: 360,
+        BoyOriginal: 192,
+        BoyYayDancer: 5,
+        BoySinger: 6,
+        BoyHappySing: 7,
+    },
+    Spotify: {
+        executable: process.env.SPOTIFY_AAC_EXECUTABLE,
+        cookies: process.env.SPOTIFY_COOKIES,
+        widevine_device: process.env.WIDEVINE_DEVICE_FILE,
+        ffmpeg: process.env.FFMPEG_EXECUTABLE
+    },
+    Filters: {
+        troll: 1,
+        mb25: 2,
+        bathroom: 3,
+        emptyRoom: 4,
+        underwater: 5,
+        twotwo: 6,
     }
-}
-
-// Audio applying functions
-
-async function applyAudioToVideoFILE(interaction, file, start, end, danceEnd) {
-
-    // modifiers
-
-    const modifier = interaction.options.getInteger("modifiers");
-
-    // Speed
-
-    const selectedSpeed = interaction.options.getInteger("speed");
-    const beatsPerMin = interaction.options.getInteger("bpm");
-    const audioSpeed = selectedSpeed || 100;
-    const normalizedAudioSpeed = Math.min(200, Math.max(50, audioSpeed));
-
-    // Volume
-
-    const audioVolume = interaction.options.getInteger("volume");
-    const volume = !audioVolume ? 100 : audioVolume > 500 ? 500 : audioVolume < 10 ? 10 : audioVolume;
-
-    // Duration
-    const calculatedDuration = (end - start) / (normalizedAudioSpeed / 100);
-    const duration = calculatedDuration <= danceEnd ? calculatedDuration : danceEnd;
-
-    // Viber
-    const viber = interaction.options.getInteger("viber");
-    const backgroundViber = `./files/permanentFiles/back${viber}.mp4`;
-
-    // Paths
-    const outputVideoPath = `./files/temporaryFinalVideo/${interaction.user.id}.mp4`;
-
-    // Size
-
-    const sizeModifier = 0.94 // reduce this to make the videos lower (do not go above 0.99)
-    let maxMB = getMaxMB(interaction.guild.premiumTier);
-    const reducerNum = Math.max(Math.round((modifier == 2 ? 25 : maxMB / (duration - duration * sizeModifier)) * 10) / 10, 0.1);
-    const reducer = reducerNum > 1 ? 1 : reducerNum;
-
-    // BPM
-
-    const bpm = !beatsPerMin ? getViberBPM(viber) : beatsPerMin > 500 ? 500 : beatsPerMin < 10 ? 10 : beatsPerMin;
-    const beat = getViberBPM(viber);
-
-    return new Promise((resolve, reject) => {
-        const ffmpegProcess = ffmpeg()
-            .input(backgroundViber)
-            .inputOptions(['-ss 0', '-stream_loop -1'])
-            .input(file)
-            .inputOptions(['-ss ' + start.toString()])
-            .complexFilter([
-                modifier == 1 ? `[1:a]atempo=${normalizedAudioSpeed / 100},volume=${volume / 67}[music];[music]amix=inputs=1[audioout]` :
-                modifier == 3 ? `[1:a]atempo=${normalizedAudioSpeed / 100},volume=${volume / 100},aecho=0.8:1:10:1[reverb];[reverb]amix=inputs=1[audioout]` :
-                modifier == 4 ? `[1:a]atempo=${normalizedAudioSpeed / 100},volume=${volume / 100},aecho=0.6:1:400:0.8[reverb];[reverb]amix=inputs=1[audioout]` :
-                modifier == 5 ? `[1:a]atempo=${normalizedAudioSpeed / 100},volume=${volume / 100},aformat=sample_fmts=s16:channel_layouts=stereo,lowpass=300[underwater];[underwater]amix=inputs=1[audioout]` :
-                `[1:a]atempo=${normalizedAudioSpeed / 100},volume=${volume / 100}[music];[music]amix=inputs=1[audioout]`,
-            ])
-            .videoBitrate(modifier == 1 ? '10k' : modifier == 6 ? '1k' : 0)
-            .audioBitrate(modifier == 1 || modifier == 6 ? '1k' : 0)
-            .outputOptions([
-                '-map 0:v',
-                '-map [audioout]',
-                '-c:v libx264',
-                '-c:a aac',
-                '-t ' + duration.toString(),
-                '-y',
-            ])
-            .output(outputVideoPath)
-            .videoFilter(
-                modifier == 1 ? `setpts=${beat / bpm}*PTS,scale=iw:-1` :
-                modifier == 6 ? `setpts=10*PTS,scale=2:2` :
-                `setpts=${beat / bpm}*PTS,scale=iw*${reducer > 1 ? 1 : reducer}:-1`
-            )
-            .on('error', (err) => {
-                reject(err);
-            })
-            .on('end', () => {
-                resolve(outputVideoPath);
-            });
-        ffmpegProcess.run();
-    });
-}
-
-async function applyAudioWithDelay(interaction, file, start, end, delay, danceEnd) {
-    await new Promise(resolve => setTimeout(resolve, delay));
-    await applyAudioToVideoFILE(interaction, file, start, end, danceEnd);
-}
-
-function getFinalFileName(viber) {
-    switch (viber) {
-        case config.ViberType.BoyDancer:
-            return "Boydancer";
-        case config.ViberType.BoyJammer:
-            return "Boyviber";
-        default:
-            return "gaysex";
-    }
-}
-
-function getViberBPM(viber) {
-    switch (viber) {
-        case config.ViberType.BoyDancer: //1
-            return 155;
-        case config.ViberType.BoyJammer: //2
-            return 155;
-        case config.ViberType.BoyOriginal: //4
-            return 120;
-        case config.ViberType.BoyYayDancer: //5
-            return 155;
-        case config.ViberType.BoySinger: //6
-            return 99;
-        case config.ViberType.BoyHappySing: //7
-            return 149;
-        default:
-            return 100;
-    }
-}
-
-function getMaxMB(guild) {
-    if (guild == 2) return 50;
-    if (guild == 3) return 100;
-    return 25
-}
-
-module.exports = { cooldownUser, giveSecondsFromTime, applyAudioWithDelay, getVideoDuration, getFinalFileName };
+};

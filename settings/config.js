@@ -6,7 +6,7 @@ module.exports = {
             '- Premium can now go up to 20 Minutes',
             '- Modifiers (more coming soon)',
             '- Boydancer is a bit faster',
-            '- Added modifier info to \`help boydancer\`',
+            '- Added modifier info to `help boydancer`',
             '- Protogen Vibers'
         ],
     },

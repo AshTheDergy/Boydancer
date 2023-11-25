@@ -6,8 +6,8 @@ module.exports = {
             '- Premium can now go up to 20 Minutes',
             '- Modifiers (more coming soon)',
             '- Boydancer is a bit faster',
-            '- Added modifier info to `help boydancer`',
-            '- Protogen Vibers'
+            '- Added modifier info to \`help boydancer\`',
+            '- AUDIO ISSUES ARE BEING WORKED ON'
         ],
     },
     TOKEN: process.env.TOKEN,
@@ -111,5 +111,14 @@ module.exports = {
         cookies: process.env.SPOTIFY_COOKIES,
         widevine_device: process.env.WIDEVINE_DEVICE_FILE,
         ffmpeg: process.env.FFMPEG_EXECUTABLE
+    },
+    Filters: {
+        troll: 1,
+        mb25: 2,
+        bathroom: 3,
+        emptyRoom: 4,
+        underwater: 5,
+        twotwo: 6,
     }
 };
+3*

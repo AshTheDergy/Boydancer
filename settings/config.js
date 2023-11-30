@@ -1,13 +1,12 @@
 require('dotenv').config();
 module.exports = {
     news: {
-        version: '2.4.2',
+        version: '2.5',
         new: [
             '- Premium can now go up to 20 Minutes',
             '- Modifiers (more coming soon)',
-            '- Boydancer is a bit faster',
-            '- Added modifier info to `help boydancer`',
-            '- Protogen Vibers'
+            '- using the BPM option now increases the fps',
+            '- AUDIO ISSUES ARE BEING WORKED ON'
         ],
     },
     TOKEN: process.env.TOKEN,
@@ -47,7 +46,7 @@ module.exports = {
             start: "(format 0:00) Leaving this blank will cause it to use the audio from 0:00",
             end: "(format 0:00) Leaving this blank will make the video 1 minute long (20 minutes for premium)",
             speed: "Choose audio speed percentage (50% - 200%)",
-            bpm: "Choose Viber bpm (beats per minute) (max 500)",
+            bpm: "Choose Viber bpm (beats per minute) (max 1000)",
             volume: "Choose the volume of the song (10% - 500%)",
             modifiers: "Modify the video :3"
         },
@@ -111,5 +110,13 @@ module.exports = {
         cookies: process.env.SPOTIFY_COOKIES,
         widevine_device: process.env.WIDEVINE_DEVICE_FILE,
         ffmpeg: process.env.FFMPEG_EXECUTABLE
+    },
+    Filters: {
+        troll: 1,
+        mb25: 2,
+        bathroom: 3,
+        emptyRoom: 4,
+        underwater: 5,
+        twotwo: 6,
     }
 };

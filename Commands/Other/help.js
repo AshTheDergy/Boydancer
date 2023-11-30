@@ -55,7 +55,7 @@ module.exports = {
             \`Start\` - Select this to add a start time from the source audio/video (e.g. 0:24, 2:52)
             \`End\` - Select this to add a end time from the source audio/video (e.g. 0:24, 2:52)
             \`Speed\` - Select the song speed, input it as a percentage without the percentage symbol (minimum: 50%, maximum: 200%)
-            \`BPM\` - Select the Viber bpm (beats per minute) EPILEPSY WARNING (minimum: 50, maximum: 500)
+            \`BPM\` - Select the Viber bpm (beats per minute) EPILEPSY WARNING (minimum: 50, maximum: 1000)
             \`Volume\` - Choose the volume of the song (10% - 500%)
             \`Modifier\` - Choose a modifier for the video/audio
             __MAX UPLOAD VIDEO LENGTH IS ${client.config.whitelisted.includes(interaction.user.id) ? client.config.maxMinute_Premium : client.config.maxMinute_Normal} MINUTES!!!__

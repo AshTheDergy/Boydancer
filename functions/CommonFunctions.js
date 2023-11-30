@@ -2,6 +2,7 @@
 const fs = require('fs');
 const util = require('util');
 const ffmpeg = require('fluent-ffmpeg');
+const ffprobe = require('ffprobe-static');
 const config = require("../settings/config");
 
 async function getVideoDuration(interaction, videoUrl) {
@@ -56,19 +57,13 @@ function giveSecondsFromTime(author, input) {
 
 async function applyAudioToVideoFILE(interaction, file, start, end, danceEnd) {
 
-    // modifiers
-
-    const modifier = interaction.options.getInteger("modifiers");
-
     // Speed
-
     const selectedSpeed = interaction.options.getInteger("speed");
     const beatsPerMin = interaction.options.getInteger("bpm");
     const audioSpeed = selectedSpeed || 100;
     const normalizedAudioSpeed = Math.min(200, Math.max(50, audioSpeed));
 
     // Volume
-
     const audioVolume = interaction.options.getInteger("volume");
     const volume = !audioVolume ? 100 : audioVolume > 500 ? 500 : audioVolume < 10 ? 10 : audioVolume;
 
@@ -79,51 +74,59 @@ async function applyAudioToVideoFILE(interaction, file, start, end, danceEnd) {
     // Viber
     const viber = interaction.options.getInteger("viber");
     const backgroundViber = `./files/permanentFiles/back${viber}.mp4`;
+    const [videoFps, width, height, bitrate] = await getVideoDetails(backgroundViber);
 
     // Paths
     const outputVideoPath = `./files/temporaryFinalVideo/${interaction.user.id}.mp4`;
 
+    // BPM
+    const bpm = !beatsPerMin ? getViberBPM(viber) : beatsPerMin > 1000 ? 1000 : beatsPerMin < 10 ? 10 : beatsPerMin;
+    const beat = getViberBPM(viber);
+    const fps = videoFps / (beat / bpm);
+
+    // Filter
+    const modifier = interaction.options.getInteger("modifiers");
+
     // Size
 
-    const sizeModifier = 0.94 // reduce this to make the videos lower (do not go above 0.99)
     let maxMB = getMaxMB(interaction.guild.premiumTier);
-    const reducerNum = Math.max(Math.round((modifier == 2 ? 25 : maxMB / (duration - duration * sizeModifier)) * 10) / 10, 0.1);
-    const reducer = reducerNum > 1 ? 1 : reducerNum;
+    const calculateResizePercentage = Math.sqrt(maxMB / ((bitrate * duration * fps) / ((8.8 - duration / 100) * 1024 * 1024)));
+    const finalWidth = Math.floor((width * calculateResizePercentage) / 2) * 2;
+    const finalHeight = Math.floor((height * calculateResizePercentage) / 2) * 2;
 
-    // BPM
+    // Filter modification
+    
+    let modifiers = {
+        cfilter: `[1:a]atempo=${normalizedAudioSpeed / 100},volume=${volume / 100}[music];[music]amix=inputs=1[audioout]`,
+        vbit: 0,
+        abit: 0,
+        vfilter: `setpts=${beat / bpm}*PTS,scale=${finalWidth > width ? width : finalWidth}:${finalHeight > height ? height : finalHeight}`,
+    };
 
-    const bpm = !beatsPerMin ? getViberBPM(viber) : beatsPerMin > 500 ? 500 : beatsPerMin < 10 ? 10 : beatsPerMin;
-    const beat = getViberBPM(viber);
+    if (modifier) {
+        await chooseFilter(modifier, modifiers, normalizedAudioSpeed, volume, beat, bpm);
+    };
 
     return new Promise((resolve, reject) => {
         const ffmpegProcess = ffmpeg()
-            .input(backgroundViber)
-            .inputOptions(['-ss 0', '-stream_loop -1'])
-            .input(file)
-            .inputOptions(['-ss ' + start.toString()])
-            .complexFilter([
-                modifier == 1 ? `[1:a]atempo=${normalizedAudioSpeed / 100},volume=${volume / 67}[music];[music]amix=inputs=1[audioout]` :
-                modifier == 3 ? `[1:a]atempo=${normalizedAudioSpeed / 100},volume=${volume / 100},aecho=0.8:1:10:1[reverb];[reverb]amix=inputs=1[audioout]` :
-                modifier == 4 ? `[1:a]atempo=${normalizedAudioSpeed / 100},volume=${volume / 100},aecho=0.6:1:400:0.8[reverb];[reverb]amix=inputs=1[audioout]` :
-                modifier == 5 ? `[1:a]atempo=${normalizedAudioSpeed / 100},volume=${volume / 100},aformat=sample_fmts=s16:channel_layouts=stereo,lowpass=300[underwater];[underwater]amix=inputs=1[audioout]` :
-                `[1:a]atempo=${normalizedAudioSpeed / 100},volume=${volume / 100}[music];[music]amix=inputs=1[audioout]`,
-            ])
-            .videoBitrate(modifier == 1 ? '10k' : modifier == 6 ? '1k' : 0)
-            .audioBitrate(modifier == 1 || modifier == 6 ? '1k' : 0)
-            .outputOptions([
-                '-map 0:v',
-                '-map [audioout]',
-                '-c:v libx264',
-                '-c:a aac',
-                '-t ' + duration.toString(),
-                '-y',
-            ])
-            .output(outputVideoPath)
-            .videoFilter(
-                modifier == 1 ? `setpts=${beat / bpm}*PTS,scale=iw:-1` :
-                modifier == 6 ? `setpts=10*PTS,scale=2:2` :
-                `setpts=${beat / bpm}*PTS,scale=iw*${reducer > 1 ? 1 : reducer}:-1`
-            )
+        .input(backgroundViber)
+        .inputOptions(['-ss 0', '-stream_loop -1'])
+        .input(file)
+        .inputOptions(['-ss ' + start.toString()])
+        .complexFilter(modifiers.cfilter)
+        .videoBitrate(modifiers.vbit)
+        .audioBitrate(modifiers.abit)
+        .fps(fps)
+        .outputOptions([
+            '-map 0:v',
+            '-map [audioout]',
+            '-c:v libx264',
+            '-c:a aac',
+            '-t ' + duration.toString(),
+            '-y',
+        ])
+        .output(outputVideoPath)
+        .videoFilter(modifiers.vfilter)
             .on('error', (err) => {
                 reject(err);
             })
@@ -174,5 +177,58 @@ function getMaxMB(guild) {
     if (guild == 3) return 100;
     return 25
 }
+
+// Filters/Modifiers
+
+async function chooseFilter(filter, modifier, normalizedAudioSpeed, volume, beat, bpm) {
+
+    switch (filter) {
+
+        case config.Filters.troll:
+            modifier.cfilter = `[1:a]atempo=${normalizedAudioSpeed / 100},volume=${volume / 67}[music];[music]amix=inputs=1[audioout]`;
+            modifier.abit = "1k";
+            modifier.vbit = "10k";
+            modifier.vfilter = `setpts=${beat / bpm}`;
+
+        case config.Filters.mb25: //25mb
+       ;
+
+        case config.Filters.bathroom: //reverb (bathroom)
+            modifier.cfilter = `[1:a]atempo=${normalizedAudioSpeed / 100},volume=${volume / 100},aecho=0.8:1:10:1[reverb];[reverb]amix=inputs=1[audioout]`;
+
+        case config.Filters.emptyRoom: //reverb (empty room)
+            modifier.cfilter = `[1:a]atempo=${normalizedAudioSpeed / 100},volume=${volume / 100},aecho=0.6:1:400:0.8[reverb];[reverb]amix=inputs=1[audioout]`;
+
+        case config.Filters.underwater:
+            modifier.cfilter = `[1:a]atempo=${normalizedAudioSpeed / 100},volume=${volume / 100},aformat=sample_fmts=s16:channel_layouts=stereo,lowpass=300[underwater];[underwater]amix=inputs=1[audioout]`;
+
+        case config.Filters.twotwo: //2x2
+            modifier.abit = "1k";
+            modifier.vbit = "1k";
+            modifier.vfilter = `setpts=10*PTS,scale=2:2`;
+
+    } return modifier;
+};
+
+// Get FPS and Resolution from the video
+
+async function getVideoDetails(videoPath) {
+  return new Promise((resolve, reject) => {
+    ffmpeg.ffprobe(videoPath, { path: ffprobe.path }, (err, metadata) => {
+      if (err) {
+        console.log("esrr")
+        reject(err);
+        return;
+    } else {
+      const data = metadata.streams[0];
+      const fps = data.avg_frame_rate.split('/')[0];
+      const width = data.width;
+      const height = data.height;
+      const bitrate = data.bit_rate;
+      resolve([fps, width, height, bitrate]);
+    }
+    });
+  });
+};
 
 module.exports = { cooldownUser, giveSecondsFromTime, applyAudioWithDelay, getVideoDuration, getFinalFileName };

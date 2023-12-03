@@ -90,7 +90,7 @@ async function applyAudioToVideoFILE(interaction, file, start, end, danceEnd) {
     // Size
 
     let maxMB = getMaxMB(interaction.guild.premiumTier);
-    const calculateResizePercentage = Math.sqrt(maxMB / ((bitrate * duration * fps) / ((8.8 - duration / 100) * 1024 * 1024)));
+    const calculateResizePercentage = Math.sqrt(maxMB / (((bitrate / 40) * duration * fps) / (8 * 1024 * 1024)));
     const finalWidth = Math.floor((width * calculateResizePercentage) / 2) * 2;
     const finalHeight = Math.floor((height * calculateResizePercentage) / 2) * 2;
 

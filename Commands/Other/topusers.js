@@ -1,5 +1,10 @@
-const { CommandInteraction, EmbedBuilder } = require("discord.js");
-const PH = require("../../handlers/Client");
+// Typedef
+/**
+ * @typedef {import('../../handlers/Client')} PH
+ * @typedef {import("discord.js").CommandInteraction} CommandInteraction 
+ */
+
+const { EmbedBuilder } = require("discord.js");
 
 module.exports = {
     name: "topusers",
@@ -16,20 +21,20 @@ module.exports = {
     */
     run: async (client, interaction) => {
 
-		let guildUsers = await client.usage.get(`${interaction.guildId}`)
+        let guildUsers = await client.usage.get(`${interaction.guildId}`)
 
         let amount = Object.keys(guildUsers).length
         let value = Object.values(guildUsers);
 
-		let allUsers = [];
+        let allUsers = [];
         for (let i = 0; i < amount; i++) {
             let user = value[i];
             allUsers.push({
-            id: user.userId,
-            name: user.username,
-            used: user.all,
-            successes: user.successful ? user.successful : 0,
-          });
+                id: user.userId,
+                name: user.username,
+                used: user.all,
+                successes: user.successful ? user.successful : 0,
+            });
         }
 
         allUsers.sort((a, b) => b.used - a.used);
@@ -45,11 +50,11 @@ module.exports = {
         }).join('\n');
 
         const lb = new EmbedBuilder()
-        .setTitle(`Top 5 boydancers!!`)
-        .setColor('#' + Math.floor(Math.random() * 0xFFFFFF).toString(16).padEnd(6, '0'))
-        .setDescription(description);
-       if (messageAuthor && !topUsers.some(user => user.id === interaction.user.id)) {
-        lb.setDescription(description + '\n' + `**\` ${allUsers.findIndex(user => user.id === interaction.user.id) + 1}. \` ${interaction.user.username} Used: ${messageAuthor.used}, Successes: ${messageAuthor.successes}**`);
+            .setTitle(`Top 5 boydancers!!`)
+            .setColor('#' + Math.floor(Math.random() * 0xFFFFFF).toString(16).padEnd(6, '0'))
+            .setDescription(description);
+        if (messageAuthor && !topUsers.some(user => user.id === interaction.user.id)) {
+            lb.setDescription(description + '\n' + `**\` ${allUsers.findIndex(user => user.id === interaction.user.id) + 1}. \` ${interaction.user.username} Used: ${messageAuthor.used}, Successes: ${messageAuthor.successes}**`);
         }
         interaction.followUp({
             embeds: [lb],

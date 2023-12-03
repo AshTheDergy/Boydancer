@@ -1,13 +1,13 @@
-const { readdirSync } = require("fs");
-const {
-  ApplicationCommandType,
-  ApplicationCommandOptionType,
-} = require("discord.js");
+// Typedef
+/**
+ * @typedef {import('../../handlers/Client')} PH
+ */
 
-const PH = require("./Client");
+// Imports
+const { readdirSync } = require("fs");
+const { ApplicationCommandType, ApplicationCommandOptionType } = require("discord.js");
 
 /**
- *
  * @param {PH} client
  */
 module.exports = async (client) => {
@@ -23,21 +23,14 @@ module.exports = async (client) => {
         if (command.name) {
           switch (command.type) {
             case "CHAT_INPUT":
-              {
-                command.type = ApplicationCommandType.ChatInput;
-              }
+              command.type = ApplicationCommandType.ChatInput;
               break;
             case "MESSAGE":
-              {
-                command.type = ApplicationCommandType.Message;
-              }
+              command.type = ApplicationCommandType.Message;
               break;
             case "USER":
-              {
-                command.type = ApplicationCommandType.User;
-              }
+              command.type = ApplicationCommandType.User;
               break;
-
             default:
               break;
           }
@@ -45,31 +38,20 @@ module.exports = async (client) => {
             command.options.forEach((option) => {
               switch (option.type) {
                 case "STRING":
-                  {
-                    option.type = ApplicationCommandOptionType.String;
-                  }
+                  option.type = ApplicationCommandOptionType.String;
                   break;
                 case "NUMBER":
-                  {
-                    option.type = ApplicationCommandOptionType.Number;
-                  }
+                  option.type = ApplicationCommandOptionType.Number;
                   break;
                 case "ROLE":
-                  {
-                    option.type = ApplicationCommandOptionType.Role;
-                  }
+                  option.type = ApplicationCommandOptionType.Role;
                   break;
                 case "SUB_COMMAND":
-                  {
-                    option.type = ApplicationCommandOptionType.Subcommand;
-                  }
+                  option.type = ApplicationCommandOptionType.Subcommand;
                   break;
                 case "SUB_COMMAND_GROUP":
-                  {
-                    option.type = ApplicationCommandOptionType.SubcommandGroup;
-                  }
+                  option.type = ApplicationCommandOptionType.SubcommandGroup;
                   break;
-
                 default:
                   break;
               }
@@ -90,19 +72,17 @@ module.exports = async (client) => {
     console.log(e);
   }
 
-  
-    // Loading Event Files
-    try {
-      let eventCount = 0;
-      readdirSync("./events")
-        .filter((f) => f.endsWith(".js"))
-        .forEach((event) => {
-          require(`../events/${event}`);
-          eventCount++;
-        });
-      console.log(`${eventCount} Events Loaded`);
-    } catch (e) {
-      console.log(e);
-    }
-  };
-  
+  // Loading Event Files
+  try {
+    let eventCount = 0;
+    readdirSync("./events")
+      .filter((f) => f.endsWith(".js"))
+      .forEach((event) => {
+        require(`../events/${event}`);
+        eventCount++;
+      });
+    console.log(`${eventCount} Events Loaded`);
+  } catch (e) {
+    console.log(e);
+  }
+};

@@ -4,5 +4,22 @@ node_modules/*
 # Ignore .env
 .env
 
-# Ignore uploading Bugs to GitHub
-data/bugs/*
+# Ignore uploading the Databases to GitHub
+data/*
+
+# Ignore MP4s
+files/permanentFiles/*.mp4
+files/permanentFiles/backup/*
+
+# Ignore JS Swap Files
+**/*.swp
+
+# Ignore Audio
+files/temporaryYoutube/*.wav
+files/temporarySpotify/*.m4a
+files/spotify_temp_files
+# VS Code
+.vscode/*
+
+# Spotify
+files/Spotify/*

@@ -1,5 +1,10 @@
-const { CommandInteraction } = require("discord.js");
-const PH = require("../../handlers/Client");
+// Typedef
+/**
+ * @typedef {import('../../handlers/Client')} PH
+ * @typedef {import("discord.js").CommandInteraction} CommandInteraction 
+ */
+
+// Variables
 const cooldowns = new Map();
 const humanizeDuration = require('humanize-duration');
 
@@ -44,12 +49,12 @@ module.exports = {
             const size = await client.bugs.size;
             await client.bugs.set(`${size}.bugs`, `${interaction.user.username} (${interaction.user.id}) - ${issue}`);
             await interaction.followUp(`Bug report has been sent! Thank you!`);
-            cooldownUser(author, 1800);
+            cooldownUser(cooldowns, author, 1800);
         }
 
-        function cooldownUser(user, time) {
+        function cooldownUser(cooldowns, user, time) {
             cooldowns.set(user, Date.now() + time * 1000); //time in seconds
             setTimeout(() => cooldowns.delete(interaction.user.id), time * 1000);
-        };
+        }
     },
 }

@@ -8,6 +8,7 @@ const config = require("../settings/config");
 
 function getYoutubeLink(videoUrl) {
     const patterns = [
+        /(?:https?:\/\/)?(?:www\.)?music.youtube\.com\/(?:watch\?v=)?[a-zA-Z0-9_-]+&?(?:t=\d+m\d+s)?/,
         /(?:https?:\/\/)?(?:www\.)?youtu\.?be(?:\.com)?\/(?:watch\?v=)?([a-zA-Z0-9_-]{11})/,
         /(?:https?:\/\/)?(?:www\.)?youtube\.com\/(?:watch\?v=)?[a-zA-Z0-9_-]+&?(?:t=\d+m\d+s)?/,
         /(?:https?:\/\/)?(?:www\.)?youtube\.com\/(?:shorts\/)?[a-zA-Z0-9_-]+/,
@@ -16,6 +17,7 @@ function getYoutubeLink(videoUrl) {
     for (const pattern of patterns) {
         const match = videoUrl.match(pattern)?.[0];
         if (match) {
+            console.log(match);
             return match;
         }
     }

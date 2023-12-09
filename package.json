@@ -15,6 +15,7 @@
     "@joshdb/json": "^1.0.5",
     "discord.js": "^14.11.0",
     "dotenv": "^16.3.1",
+    "ffprobe-static": "^3.1.0",
     "fluent-ffmpeg": "^2.1.2",
     "humanize-duration": "^3.29.0",
     "python-shell": "^5.0.0",

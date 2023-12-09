@@ -1,12 +1,13 @@
 require('dotenv').config();
 module.exports = {
     news: {
-        version: '2.5',
+        version: '2.5.1',
         new: [
             '- Premium can now go up to 20 Minutes',
             '- Modifiers (more coming soon)',
             '- using the BPM option now increases the fps',
-            '- AUDIO ISSUES ARE BEING WORKED ON'
+            '- AUDIO ISSUES ARE BEING WORKED ON',
+            '- Fixed YouTube Music'
         ],
     },
     TOKEN: process.env.TOKEN,

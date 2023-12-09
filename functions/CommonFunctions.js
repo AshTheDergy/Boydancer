@@ -191,7 +191,7 @@ async function chooseFilter(filter, modifier, normalizedAudioSpeed, volume, beat
             modifier.vfilter = `setpts=${beat / bpm}`;
 
         case config.Filters.mb25: //25mb
-       ;
+        ;
 
         case config.Filters.bathroom: //reverb (bathroom)
             modifier.cfilter = `[1:a]atempo=${normalizedAudioSpeed / 100},volume=${volume / 100},aecho=0.8:1:10:1[reverb];[reverb]amix=inputs=1[audioout]`;
@@ -207,6 +207,9 @@ async function chooseFilter(filter, modifier, normalizedAudioSpeed, volume, beat
             modifier.vbit = "1k";
             modifier.vfilter = `setpts=10*PTS,scale=2:2`;
 
+        default:
+        ;
+
     } return modifier;
 };
 
@@ -218,7 +221,6 @@ async function getVideoDetails(videoPath) {
       if (err) {
         console.log("esrr")
         reject(err);
-        return;
     } else {
       const data = metadata.streams[0];
       const fps = data.avg_frame_rate.split('/')[0];

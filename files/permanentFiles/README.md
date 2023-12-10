@@ -1,9 +1,9 @@
 # Replacing Boydancer Videos
 
 
-Replace back*.mp4 with your own Videos
+Replace back*.mp4 with your own Videos (If you wish)
 
-
+Current files:
 | File Name | Description |
 | --- | --- |
 | back1.mp4 | Boydancer Original (bpm: 155) |

@@ -29,13 +29,5 @@ function cooldown(interaction, cmd) {
   }
 }
 
-function toPascalCase(string) {
-  if (!string) return;
-  const words = string?.match(/[a-z]+/gi);
-  if (!words) return "";
-  return words
-    .map((word) => word.charAt(0).toUpperCase() + word.substr(1).toLowerCase())
-    .join("");
-}
 
-module.exports = { cooldown, toPascalCase };
+module.exports = { cooldown };

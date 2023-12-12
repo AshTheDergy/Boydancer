@@ -61,8 +61,8 @@ module.exports = {
             __MAX UPLOAD VIDEO LENGTH IS ${client.config.whitelisted.includes(interaction.user.id) ? client.config.maxMinute_Premium : client.config.maxMinute_Normal} MINUTES!!!__
             __MAX BOYDANCER VIDEO LENGTH IS ${client.config.whitelisted.includes(interaction.user.id) ? client.config.danceEnd_Premium/60 : client.config.danceEnd_Normal/60} MINUTES!!!__**
 
-            ### Supported Files:
-            \`${correctFile}\``
+            # Supported Files:
+            \`${correctFile.join(', ')}\``
             )
             .addFields([
                 {
@@ -78,11 +78,11 @@ module.exports = {
                 },
                 {
                     name: `Supporters:`,
-                    value: `${supporters.join('\n')}`,
+                    value: supporters < 1 ? `None..` : `${supporters.join('\n')}`,
                 },
                 {
                     name: `What's new? \`${client.config.news.version}\``,
-                    value: `${client.config.news.new.join('\n')}`
+                    value: client.config.news.new < 1 ? 'Nothing :3' : `${client.config.news.new.join('\n')}`
                 },
             ])
             .setColor('#' + Math.floor(Math.random() * 0xFFFFFF).toString(16).padEnd(6, '0'))

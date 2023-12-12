@@ -8,7 +8,6 @@ const config = require("../settings/config");
 
 function getYoutubeLink(videoUrl) {
     const patterns = [
-        /(?:https?:\/\/)?(?:www\.)?music.youtube\.com\/(?:watch\?v=)?[a-zA-Z0-9_-]+&?(?:t=\d+m\d+s)?/,
         /(?:https?:\/\/)?(?:www\.)?youtu\.?be(?:\.com)?\/(?:watch\?v=)?([a-zA-Z0-9_-]{11})/,
         /(?:https?:\/\/)?(?:www\.)?youtube\.com\/(?:watch\?v=)?[a-zA-Z0-9_-]+&?(?:t=\d+m\d+s)?/,
         /(?:https?:\/\/)?(?:www\.)?youtube\.com\/(?:shorts\/)?[a-zA-Z0-9_-]+/,
@@ -180,7 +179,12 @@ async function handleYouTube(client, interaction, audioUrl, cooldowns) {
             await client.interaction_db.delete(author);
             console.error(config.strings.error.video_generation, error);
             interaction.followUp(config.strings.error.video_generation);
-            client.users.cache.get(config.error_dm).send(util.format(config.strings.error.video_generation_detailed_dm, interaction.guildId, author, error));
+            config.error_dm.forEach(userId => {
+                const user = client.users.cache.get(userId);
+                if (user) {user.send(util.format(config.strings.error.video_generation_detailed_dm, interaction.guildId, interaction.member.guild.name, author, interaction.guildId, interaction.channelId, interaction.id, error))
+                    .catch(error => console.error(`Failed to send error DM to user ${userId}: ${error}`));
+                } else {console.error(`User with ID ${userId} not found.`);}
+            });
             cooldownUser(cooldowns, interaction, 10);
             fs.unlinkSync(tempYoutubePath);
         }

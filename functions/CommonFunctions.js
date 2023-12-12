@@ -10,7 +10,12 @@ async function getVideoDuration(interaction, videoUrl) {
     const callback = (reason) => {
         if (!interaction.replied) {
             interaction.editReply(config.strings.error.video_generation);
-            client.users.cache.get(config.error_dm).send(util.format(config.strings.error.video_generation_detailed_dm, interaction.guildId, author, error));
+            config.error_dm.forEach(userId => {
+                const user = client.users.cache.get(userId);
+                if (user) {user.send(util.format(config.strings.error.video_generation_detailed_dm, interaction.guildId, interaction.member.guild.name, author, interaction.guildId, interaction.channelId, interaction.id, error))
+                    .catch(error => console.error(`Failed to send error DM to user ${userId}: ${error}`));
+                } else {console.error(`User with ID ${userId} not found.`);}
+            });
         }
     };
     process.on('unhandledRejection', callback);
@@ -89,7 +94,7 @@ async function applyAudioToVideoFILE(interaction, file, start, end, danceEnd) {
 
     // Size
 
-    let maxMB = getMaxMB(interaction.guild.premiumTier);
+    let maxMB = modifier == 2 ? 25 : getMaxMB(interaction.guild.premiumTier);
     const calculateResizePercentage = Math.sqrt(maxMB / (((bitrate / 40) * duration * fps) / (8 * 1024 * 1024)));
     const finalWidth = Math.floor((width * calculateResizePercentage) / 2) * 2;
     const finalHeight = Math.floor((height * calculateResizePercentage) / 2) * 2;
@@ -187,11 +192,11 @@ async function chooseFilter(filter, modifier, normalizedAudioSpeed, volume, beat
         case config.Filters.troll:
             modifier.cfilter = `[1:a]atempo=${normalizedAudioSpeed / 100},volume=${volume / 67}[music];[music]amix=inputs=1[audioout]`;
             modifier.abit = "1k";
-            modifier.vbit = "10k";
-            modifier.vfilter = `setpts=${beat / bpm}`;
+            modifier.vbit = "40k";
+            modifier.vfilter = `setpts=${beat / bpm},scale=400:400`;
 
         case config.Filters.mb25: //25mb
-        ;
+       ;
 
         case config.Filters.bathroom: //reverb (bathroom)
             modifier.cfilter = `[1:a]atempo=${normalizedAudioSpeed / 100},volume=${volume / 100},aecho=0.8:1:10:1[reverb];[reverb]amix=inputs=1[audioout]`;
@@ -207,9 +212,6 @@ async function chooseFilter(filter, modifier, normalizedAudioSpeed, volume, beat
             modifier.vbit = "1k";
             modifier.vfilter = `setpts=10*PTS,scale=2:2`;
 
-        default:
-        ;
-
     } return modifier;
 };
 
@@ -221,6 +223,7 @@ async function getVideoDetails(videoPath) {
       if (err) {
         console.log("esrr")
         reject(err);
+        return;
     } else {
       const data = metadata.streams[0];
       const fps = data.avg_frame_rate.split('/')[0];

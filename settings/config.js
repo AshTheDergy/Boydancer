@@ -1,13 +1,11 @@
 require('dotenv').config();
 module.exports = {
     news: {
-        version: '2.5.1',
+        version: '2.5.2',
         new: [
             '- Premium can now go up to 20 Minutes',
-            '- Modifiers (more coming soon)',
-            '- using the BPM option now increases the fps',
             '- AUDIO ISSUES ARE BEING WORKED ON',
-            '- Fixed YouTube Music'
+            '- Made developing easier (nothing big)'
         ],
     },
     TOKEN: process.env.TOKEN,
@@ -28,8 +26,9 @@ module.exports = {
         success: "✅",
         ping: "🏓",
     },
+    developers: ['817843037593403402', '762219738570555412'],
     whitelisted: ['817843037593403402', '762219738570555412'],
-    error_dm: '762219738570555412',
+    error_dm: ['817843037593403402', '762219738570555412'],
     correctFile: [".mp3", ".wav", ".aac", ".flac", ".ogg", ".mp4", ".avi", ".mov", ".webm", ".3gp", ".mkv", ".qt"],
     correctDiscordLink: /^https:\/\/cdn\.discordapp\.com\/attachments\/\d+\/\d+\/[a-zA-Z0-9._-]+\.(mp3|wav|aac|flac|ogg|mp4|avi|mov|webm|3gp|mkv|qt)\?.*$/,
     danceEnd_Premium: 1200,
@@ -55,7 +54,7 @@ module.exports = {
             command_not_found: "%s `%s` Command Not Found",
             video_generation: "An error occurred while generating the video :( (Make sure the Video is not Age Restricted)",
             video_generation_detailed: "An error occurred while generating the video. (Make sure the Video is not Age Restricted):\n\n||%s||",
-            video_generation_detailed_dm: "Error in Guild: %s, User: <@%s>:\n\n%s",
+            video_generation_detailed_dm: "Error in Guild: %s (%s), User: <@%s>:\n[Message](https://discord.com/channels/%s/%s/%s)\n\n%s",
             invalid_everything: "%s - ** Please provide a __Link__ or __File__ (use `/help boydancer` for more information) **",
             invalid_link: "%s - ** Please provide a supported link (supported are __Youtube__, __Spotify__, __SoundCloud__ and __Audio/Video__ links (use `/help boydancer` for more information) **",
             invalid_link_soundcloud: "%s - ** The __SoundCloud Link__ you provided does not exist. __Shortened Links__ also don't work **",

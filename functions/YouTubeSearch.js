@@ -160,7 +160,12 @@ async function handleSearch(client, interaction, searchTitle, cooldowns) {
                 
                 console.error(config.strings.error.video_generation, error);
                 interaction.followUp(config.strings.error.video_generation);
-                client.users.cache.get(config.error_dm).send(util.format(config.strings.error.video_generation_detailed_dm, interaction.guildId, author, error));
+                config.error_dm.forEach(userId => {
+                    const user = client.users.cache.get(userId);
+                    if (user) {user.send(util.format(config.strings.error.video_generation_detailed_dm, interaction.guildId, interaction.member.guild.name, author, interaction.guildId, interaction.channelId, interaction.id, error))
+                        .catch(error => console.error(`Failed to send error DM to user ${userId}: ${error}`));
+                    } else {console.error(`User with ID ${userId} not found.`);}
+                });
                 cooldownUser(cooldowns, interaction, 10);
             }
         }

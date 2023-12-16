@@ -118,5 +118,5 @@ module.exports = {
         emptyRoom: 4,
         underwater: 5,
         twotwo: 6,
-    }
+    },
 };

@@ -61,7 +61,7 @@ module.exports = {
             __MAX UPLOAD VIDEO LENGTH IS ${client.config.whitelisted.includes(interaction.user.id) ? client.config.maxMinute_Premium : client.config.maxMinute_Normal} MINUTES!!!__
             __MAX BOYDANCER VIDEO LENGTH IS ${client.config.whitelisted.includes(interaction.user.id) ? client.config.danceEnd_Premium/60 : client.config.danceEnd_Normal/60} MINUTES!!!__**
 
-            # Supported Files:
+            **Supported Files:**
             \`${correctFile.join(', ')}\``
             )
             .addFields([

@@ -1,6 +1,7 @@
 const fs = require('fs');
 const util = require('util');
 const { giveSecondsFromTime, cooldownUser, applyAudioWithDelay, getFinalFileName } = require("./CommonFunctions");
+const { downloadYoutubeAudioFromCobalt } = require("./YouTubeCobalt");
 const ytdl = require('ytdl-core');
 const config = require("../settings/config");
 
@@ -29,23 +30,12 @@ function isWorkingLink_Youtube(videoUrl) {
 
 async function checkYoutubeVideoLength(videoUrl) {
     try {
-        const info = await ytdl.getBasicInfo(videoUrl);
-        return info.videoDetails.lengthSeconds;
+        // This YTDL API Function is broken with no easy fix so well
+        return 69;
     } catch (error) {
         console.error(error);
         return false;
     }
-}
-
-async function downloadYoutubeVideo(interaction, videoUrl) {
-    const options = { quality: 'highestaudio' };
-    const stream = ytdl(videoUrl, options);
-    const outputPath = `./files/temporaryYoutube/${interaction.user.id}.wav`;
-    const fileStream = fs.createWriteStream(outputPath);
-    stream.pipe(fileStream);
-    stream.on('error', (err) => {
-        console.error('Error:', err);
-    });
 }
 
 async function handleYouTube(client, interaction, audioUrl, cooldowns) {
@@ -158,7 +148,7 @@ async function handleYouTube(client, interaction, audioUrl, cooldowns) {
         let replies = config.strings.generation_replies;
         let randomMessage = Math.floor(Math.random() * replies.length);
         interaction.editReply(replies[randomMessage]);
-        await downloadYoutubeVideo(interaction, audioUrl);
+        await downloadYoutubeAudioFromCobalt(interaction, audioUrl);
         cooldownUser(cooldowns, interaction, 5);
 
         // Tell the DB that the current User has started an Interaction
@@ -191,4 +181,4 @@ async function handleYouTube(client, interaction, audioUrl, cooldowns) {
     }
 }
 
-module.exports = { handleYouTube, isWorkingLink_Youtube, getYoutubeLink, downloadYoutubeVideo, checkYoutubeVideoLength };
+module.exports = { handleYouTube, isWorkingLink_Youtube, getYoutubeLink, checkYoutubeVideoLength };

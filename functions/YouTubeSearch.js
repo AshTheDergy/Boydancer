@@ -2,7 +2,7 @@
 const fs = require('fs');
 const util = require('util');
 const { giveSecondsFromTime, cooldownUser, applyAudioWithDelay, getFinalFileName } = require("./CommonFunctions");
-const { downloadYoutubeVideo } = require("./YouTube");
+const { downloadYoutubeAudioFromCobalt } = require("./YouTubeCobalt");
 const yts = require('yt-search');
 const config = require("../settings/config");
 
@@ -138,7 +138,7 @@ async function handleSearch(client, interaction, searchTitle, cooldowns) {
             }
 
             const videoUrl = info.url;
-            await downloadYoutubeVideo(interaction, videoUrl);
+            await downloadYoutubeAudioFromCobalt(interaction, videoUrl);
             cooldownUser(cooldowns, interaction, 5);
 
             // Tell the DB that the current User has started an Interaction

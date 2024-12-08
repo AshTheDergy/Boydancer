@@ -1,11 +1,9 @@
 require('dotenv').config();
 module.exports = {
     news: {
-        version: '2.5.2',
+        version: '2.5.3',
         new: [
-            '- Premium can now go up to 20 Minutes',
-            '- AUDIO ISSUES ARE BEING WORKED ON',
-            '- Made developing easier (nothing big)'
+            '- YouTube + Search has been fixed, yippeeeeee'
         ],
     },
     TOKEN: process.env.TOKEN,

@@ -1,4 +1,4 @@
-from spotify_aac_downloader.downloader import Downloader
+from spotify_web_downloader.downloader import Downloader
 from pathlib import Path
 import sys
 

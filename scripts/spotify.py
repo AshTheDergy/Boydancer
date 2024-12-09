@@ -1,55 +1,72 @@
-from spotify_web_downloader.downloader import Downloader
+from votify.spotify_api import SpotifyApi
+from votify.enums import ( AudioQuality, DownloadMode, RemuxModeAudio )
+from votify.downloader import Downloader
+from votify.downloader_audio import DownloaderAudio
+from votify.downloader_song import DownloaderSong
 from pathlib import Path
 import sys
 
 def download(output_path, spotify_temp, cookies_file, widevine_device, ffmpeg_location, author, audio_url):
+    spotify_api = SpotifyApi.from_cookies_file(cookies_file)
+    if spotify_api.config_info["isAnonymous"]:
+        raise Exception("Failed to get a valid session. Try logging in and exporting your cookies again")
+    
     downloader = Downloader(
-        final_path=Path(output_path),
+        spotify_api,
+        output_path=Path(output_path),
         temp_path=Path(spotify_temp),
-        cookies_location=Path(cookies_file),
-        wvd_location=Path(widevine_device),
-        ffmpeg_location=ffmpeg_location,
+        wvd_path=Path(widevine_device),
+        aria2c_path='',
+        ffmpeg_path=ffmpeg_location,
+        mp4box_path='',
+        mp4decrypt_path='',
+        packager_path='',
         template_folder_album='',
+        template_folder_compilation='',
         template_file_multi_disc=author,
         template_file_single_disc=author,
-        audio_url=audio_url,
-        aria2c_location=None,
-        exclude_tags=None,
-        truncate=40,
-        premium_quality=False,
-        template_folder_compilation=''
+        exclude_tags='',
+        truncate=40
     )
 
-    downloader.setup_cdm()
-    downloader.setup_session()
+    downloader_audio = DownloaderAudio(
+        downloader,
+        audio_quality=AudioQuality.AAC_MEDIUM,
+        download_mode=DownloadMode.YTDLP,
+        remux_mode=RemuxModeAudio.FFMPEG
+    )
+
+    downloader_song = DownloaderSong(
+        downloader_audio,
+        lrc_only=False,
+        no_lrc=True
+    )
+
+    downloader.set_cdm()
     
     try:
-        track = downloader.get_download_queue(audio_url)[0]
+        url_info = downloader.get_url_info(audio_url)
+        download_queue = downloader.get_download_queue(url_info.type, url_info.id)
     except:
         raise ValueError("Couldn't check URL.")
     
     try:
-        track_id = track['id']
-        
-        gid = downloader.uri_to_gid(track_id)
-        metadata = downloader.get_metadata(gid)
+        download_queue_item = download_queue[0]
+        media_metadata = download_queue_item.media_metadata
 
-        tags = downloader.get_tags(metadata, None)
-        file_id = downloader.get_file_id(metadata)
+        media_id = downloader.get_media_id(media_metadata)
+        media_type = media_metadata["type"]
+        gid_metadata = downloader.get_gid_metadata(media_id, media_type)
 
-        pssh = downloader.get_pssh(file_id)
-        decryption_key = downloader.get_decryption_key(pssh)
+        downloader_song.download(
+                        track_id=media_id,
+                        track_metadata=media_metadata,
+                        album_metadata=download_queue_item.album_metadata,
+                        gid_metadata=gid_metadata,
+                        playlist_metadata=download_queue_item.playlist_metadata,
+                        playlist_track=0
+                        )
 
-        stream_url = downloader.get_stream_url(file_id)
-        encrypted_location = downloader.get_encrypted_location(track_id)
-
-        downloader.download_ytdlp(encrypted_location, stream_url)
-
-        fixed_location = downloader.get_fixed_location(track_id)
-        downloader.fixup(decryption_key, encrypted_location, fixed_location)
-
-        final_location = downloader.get_final_location(tags)
-        downloader.move_to_final_location(fixed_location, final_location)
     except Exception as e:
         raise Exception(f"Failed to download track: {e}")
     finally:

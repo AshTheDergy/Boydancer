@@ -1,9 +1,10 @@
 require('dotenv').config();
 module.exports = {
     news: {
-        version: '2.5.3',
+        version: '2.5.4',
         new: [
-            '- YouTube + Search has been fixed, yippeeeeee'
+            '- YouTube + Search has been fixed, yippeeeeee',
+            '- Oh also Spotify got fixed'
         ],
     },
     TOKEN: process.env.TOKEN,

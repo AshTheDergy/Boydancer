@@ -138,13 +138,14 @@ async function handleSearch(client, interaction, searchTitle, cooldowns) {
             }
 
             const videoUrl = info.url;
-            await downloadYoutubeAudioFromCobalt(interaction, videoUrl);
-            cooldownUser(cooldowns, interaction, 5);
-
-            // Tell the DB that the current User has started an Interaction
-            await client.interaction_db.set(author);
 
             try {
+                await downloadYoutubeAudioFromCobalt(interaction, videoUrl);
+                cooldownUser(cooldowns, interaction, 5);
+
+                // Tell the DB that the current User has started an Interaction
+                await client.interaction_db.set(author);
+
                 await applyAudioWithDelay(interaction, tempYoutubePath, danceStart, length < danceEnd ? length : danceEnd, 8000, danceEnd);
                 await interaction.editReply({ content: finalMessage, files: [{ attachment: outputVideoPath, name: `${finalFileName}.mp4` }] });
                 fs.unlinkSync(outputVideoPath);

@@ -1,7 +1,7 @@
 require('dotenv').config();
 module.exports = {
     news: {
-        version: '2.5.4',
+        version: '2.5.5',
         new: [
             '- YouTube + Search has been fixed, yippeeeeee',
             '- Oh also Spotify got fixed'

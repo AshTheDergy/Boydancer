@@ -148,13 +148,14 @@ async function handleYouTube(client, interaction, audioUrl, cooldowns) {
         let replies = config.strings.generation_replies;
         let randomMessage = Math.floor(Math.random() * replies.length);
         interaction.editReply(replies[randomMessage]);
-        await downloadYoutubeAudioFromCobalt(interaction, audioUrl);
-        cooldownUser(cooldowns, interaction, 5);
 
-        // Tell the DB that the current User has started an Interaction
-        await client.interaction_db.set(author);
-        
         try {
+            await downloadYoutubeAudioFromCobalt(interaction, audioUrl);
+            cooldownUser(cooldowns, interaction, 5);
+
+            // Tell the DB that the current User has started an Interaction
+            await client.interaction_db.set(author);
+        
             await applyAudioWithDelay(interaction, tempYoutubePath, danceStart, length < danceEnd ? length : danceEnd, 5000, danceEnd);
             await interaction.editReply({ content: finalMessage, files: [{ attachment: outputVideoPath, name: `${finalFileName}.mp4` }] });
             fs.unlinkSync(outputVideoPath);

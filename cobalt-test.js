@@ -14,8 +14,6 @@ function getHeaders() {
 }
 
 async function downloadYoutubeAudioFromCobalt(videoUrl) {
-    const id = ytdl.getURLVideoID(videoUrl);
-
     const responseV2 = await axios({
         method: 'POST',
         url: 'https://cobalt-api.kwiatekmiki.com',
@@ -32,9 +30,6 @@ async function downloadYoutubeAudioFromCobalt(videoUrl) {
     })
 
     const urlObjectV2 = responseV2.data.url;
-
-    // const response = await axios.get(`https://exyezed.vercel.app/api/cobalt/audio/wav/${id}`);
-    // const urlObject = response.data.url;
 
     if (responseV2.status !== 200) {
         throw Error(`Error: Something went wrong while fetching the audio file. (${responseV2.error.code || responseV2.text || responseV2.statusText || ''})`);

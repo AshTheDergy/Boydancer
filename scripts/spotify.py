@@ -9,7 +9,7 @@ import sys
 def download(output_path, spotify_temp, cookies_file, widevine_device, ffmpeg_location, author, audio_url):
     spotify_api = SpotifyApi.from_cookies_file(cookies_file)
     if spotify_api.config_info["isAnonymous"]:
-        raise Exception("Failed to get a valid session. Try logging in and exporting your cookies again")
+        raise ValueError("Failed to get a valid session. Try logging in and exporting your cookies again")
     
     downloader = Downloader(
         spotify_api,
@@ -68,7 +68,7 @@ def download(output_path, spotify_temp, cookies_file, widevine_device, ffmpeg_lo
                         )
 
     except Exception as e:
-        raise Exception(f"Failed to download track: {e}")
+        raise RuntimeError(f"Failed to download track: {e}")
     finally:
         downloader.cleanup_temp_path()
 

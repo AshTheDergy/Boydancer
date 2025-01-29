@@ -29,13 +29,8 @@ function isWorkingLink_Youtube(videoUrl) {
 }
 
 async function checkYoutubeVideoLength(videoUrl) {
-    try {
-        // This YTDL API Function is broken with no easy fix so well
-        return 69;
-    } catch (error) {
-        console.error(error);
-        return false;
-    }
+    // This YTDL API Function is broken with no easy fix so well
+    return 69;
 }
 
 async function handleYouTube(client, interaction, audioUrl, cooldowns) {

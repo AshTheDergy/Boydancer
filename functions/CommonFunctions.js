@@ -223,7 +223,6 @@ async function getVideoDetails(videoPath) {
       if (err) {
         console.log("esrr")
         reject(err);
-        return;
     } else {
       const data = metadata.streams[0];
       const fps = data.avg_frame_rate.split('/')[0];

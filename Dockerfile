@@ -4,7 +4,7 @@ COPY package.json package-lock.json /deps/
 RUN npm i
 
 FROM node:20-alpine
-RUN apk add ffmpeg python3 py3-pip
+RUN apk --no-cache add ffmpeg python3 py3-pip
 RUN python3 -m pip install yt-dlp votify mutagen --break-system-packages
 WORKDIR /app
 COPY . .

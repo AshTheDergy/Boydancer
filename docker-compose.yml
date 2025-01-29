@@ -1,3 +1,4 @@
+---
 version: '3'
 
 services:
@@ -11,4 +12,3 @@ services:
     tty: true
     env_file: .env
     restart: always
-

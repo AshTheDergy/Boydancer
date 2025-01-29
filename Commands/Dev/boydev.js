@@ -49,7 +49,6 @@ module.exports = {
             let replies = ["Sorry.. who are you?", "Nuh uh you ain't a dev", "Nuh uh"];
             let randomMessage = Math.floor(Math.random() * replies.length);
             interaction.followUp({ content: replies[randomMessage], ephemeral: true });
-            return;
         }
     },
 }

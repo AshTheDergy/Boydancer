@@ -13,8 +13,10 @@ function getHeaders() {
     };
 }
 
-async function downloadYoutubeAudioFromCobalt(interaction, videoUrl) {
-    const response = await axios({
+async function downloadYoutubeAudioFromCobalt(videoUrl) {
+    const id = ytdl.getURLVideoID(videoUrl);
+
+    const responseV2 = await axios({
         method: 'POST',
         url: 'https://cobalt-api.kwiatekmiki.com',
         data: JSON.stringify({
@@ -29,21 +31,26 @@ async function downloadYoutubeAudioFromCobalt(interaction, videoUrl) {
         headers: getHeaders()
     })
 
-    const urlObject = response.data.url;
-    
-    if (response.status !== 200) {
-        throw Error(`Error: Something went wrong while fetching the audio file. (${response.error.code || response.text || response.statusText || ''})`);
+    const urlObjectV2 = responseV2.data.url;
+
+    // const response = await axios.get(`https://exyezed.vercel.app/api/cobalt/audio/wav/${id}`);
+    // const urlObject = response.data.url;
+
+    if (responseV2.status !== 200) {
+        throw Error(`Error: Something went wrong while fetching the audio file. (${responseV2.error.code || responseV2.text || responseV2.statusText || ''})`);
     }
 
-    const outputPath = `./files/temporaryYoutube/${interaction.user.id}.wav`;
+    console.log(responseV2.data.url);
+
+    const outputPath = `./files/temporaryYoutube/gay.wav`;
     const writer = fs.createWriteStream(outputPath);
 
-    const fileResponse = await axios({ url: urlObject, method: 'GET', responseType: 'stream' });
+    const fileResponse = await axios({ url: urlObjectV2, method: 'GET', responseType: 'blob' });
     fileResponse.data.pipe(writer);
 
     writer.on('error', (err) => {
-         console.error('Error:', err);
+          console.error('Error:', err);
     });
 }
 
-module.exports = { downloadYoutubeAudioFromCobalt };
+downloadYoutubeAudioFromCobalt('https://www.youtube.com/watch?v=Kx0jTGd7urs');

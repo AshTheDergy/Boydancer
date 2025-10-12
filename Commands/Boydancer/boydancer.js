@@ -215,12 +215,16 @@ module.exports = {
             
             const youtubeLink = getYoutubeLink(audioUrl);
             if (youtubeLink) {
-                if (isWorkingLink_Youtube(youtubeLink)) {
-                    handleYouTube(client, interaction, youtubeLink, cooldowns);
-                } else {
-                    interaction.reply({ content: util.format(config.strings.error.youtube_video_does_not_exist, config.emoji.error), ephemeral: true });
-                    cooldownUser(cooldowns, interaction, 10);
-                }
+
+                interaction.reply({ content: "YouTube is broken at this moment. We are actively trying to find a fix. Everything else should be functional", ephemeral: true });
+                cooldownUser(cooldowns, interaction, 10);
+
+                // if (isWorkingLink_Youtube(youtubeLink)) {
+                //     handleYouTube(client, interaction, youtubeLink, cooldowns);
+                // } else {
+                //     interaction.reply({ content: util.format(config.strings.error.youtube_video_does_not_exist, config.emoji.error), ephemeral: true });
+                //     cooldownUser(cooldowns, interaction, 10);
+                // }
                 return;
             }
 
@@ -251,7 +255,9 @@ module.exports = {
         } else if (!audioUrl && audioFile && !searchTitle) {
             handleFile(client, interaction, audioFile, cooldowns);
         } else if (!audioUrl && !audioFile && searchTitle) {
-            handleSearch(client, interaction, searchTitle, cooldowns);
+            interaction.reply({ content: "YouTube is broken at this moment. We are actively trying to find a fix. Everything else should be functional", ephemeral: true });
+            cooldownUser(cooldowns, interaction, 10);
+            // handleSearch(client, interaction, searchTitle, cooldowns);
         } else {
             let replies = config.strings.random_invalid_replies;
             let randomMessage = Math.floor(Math.random() * replies.length);
